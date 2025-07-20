@@ -25,3 +25,6 @@ VITE_WOO_URL=https://zonabclub.com
 VITE_WOO_KEY=your_consumer_key
 VITE_WOO_SECRET=your_consumer_secret
 ```
+
+After modifying `vite.config.js` you must restart the development server so the proxy
+changes take effect.
