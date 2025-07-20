@@ -26,11 +26,11 @@ import { useExtrasParser } from '../../hooks/useExtrasParser.js';
 export default function ProductDialog({ open, product, onClose, onAdd }) {
   const [qty, setQty] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState({});
-
+const parsedExtras = useExtrasParser(product, selectedExtras);
   if (!product) return null;
 
   const extras = product.tavoxExtras || [];
-  const parsedExtras = useExtrasParser(product, selectedExtras);
+
 
   const handleOptionChange = (groupId, value) => {
     setSelectedExtras((prev) => {

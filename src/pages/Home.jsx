@@ -52,9 +52,7 @@ export default function Home() {
     return products.filter((p) => p.name.toLowerCase().includes(lower));
   }, [products, query]);
 
-  const handleAddToCart = () => {
-    // The actual add logic is inside ProductDialog via CartContext
-  };
+
 
   const handleSendWhatsApp = () => {
     if (waLink) {
