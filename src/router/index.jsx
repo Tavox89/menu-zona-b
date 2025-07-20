@@ -1,12 +1,17 @@
-import { Routes, Route } from 'react-router-dom';
-import Home from '../pages/Home';
-import Products from '../pages/Products';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from '../pages/Home.jsx';
 
-export default function Router() {
+/**
+ * Application router. For the MVP we only have a single page, but
+ * separating routes allows easy expansion later (e.g. product details,
+ * admin screen, etc.).
+ */
+export default function AppRouter() {
   return (
-    <Routes>
-      <Route path='/' element={<Home />} />
-      <Route path='/category/:id' element={<Products />} />
-    </Routes>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
