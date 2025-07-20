@@ -1,0 +1,30 @@
+﻿# ───────── REGISTROS Y LOGS ─────────
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log
+
+# ───────── DEPENDENCIAS ─────────
+node_modules/
+
+# ───────── SALIDA DE PRODUCCIÓN ─────────
+dist/
+build/
+
+# ───────── CACHÉ DE VITE ─────────
+.vite/
+
+# ───────── VARIABLES DE ENTORNO ─────────
+.env*
+!.env.example        # deja la plantilla de ejemplo si la creas
+
+# ───────── INFORMES DE COBERTURA ─────────
+coverage/
+
+# ───────── CONFIGs DEL EDITOR ─────────
+.vscode/
+.idea/
+
+# ───────── ARCHIVOS DE SISTEMA ─────────
+.DS_Store
+Thumbs.db
