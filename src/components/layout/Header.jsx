@@ -19,7 +19,7 @@ export default function Header({
   query,
   onQueryChange,
   categories = [],
-  selectedCategory,
+
   onSelectCategory,
 }) {
   const theme = useTheme();

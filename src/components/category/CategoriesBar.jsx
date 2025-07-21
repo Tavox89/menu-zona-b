@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import CategoryChip from './CategoryChip.jsx';
+import Chip from '@mui/material/Chip';
 
 /**
  * Horizontal scrollable bar of category chips. Displays the provided list of
@@ -13,64 +12,75 @@ import CategoryChip from './CategoryChip.jsx';
  */
 export default function CategoriesBar({ categories = [], selected = 0, onSelect }) {
   const scrollRef = useRef(null);
-  const [hasOverflow, setHasOverflow] = useState(false);
+    const [overflow, setOverflow] = useState(false);
 
-  useEffect(() => {
+   const scroll = (dx) => {
+    if (scrollRef.current) scrollRef.current.scrollLeft += dx;
+  };
+
+  useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const check = () => setHasOverflow(el.scrollWidth > el.clientWidth);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    const handle = () => setOverflow(el.scrollWidth > el.clientWidth);
+    handle();
+    window.addEventListener('resize', handle);
+    return () => window.removeEventListener('resize', handle);
   }, [categories]);
 
   return (
     <Box sx={{ position: 'relative' }}>
-      {hasOverflow && (
-        <>
-          <IconButton
-            size="small"
-            onClick={() => {
-              if (scrollRef.current) scrollRef.current.scrollLeft -= 200;
-            }}
-            sx={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}
-          >
-            <ChevronLeftIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => {
-              if (scrollRef.current) scrollRef.current.scrollLeft += 200;
-            }}
-            sx={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}
-          >
-            <ChevronRightIcon fontSize="small" />
-          </IconButton>
-        </>
-      )}
-      <Stack
+      <IconButton
+        size="small"
+        onClick={() => scroll(-200)}
+        sx={{
+          position: 'absolute',
+          left: 2,
+          top: 'calc(50% - 16px)',
+          zIndex: 1,
+          display: overflow ? { xs: 'flex', md: 'none' } : 'none',
+        }}
+      >
+        <ChevronLeftIcon fontSize="small" />
+      </IconButton>
+
+      <Box
         ref={scrollRef}
-        direction="row"
-        flexWrap="wrap"
-        gap={1}
+     
         sx={(theme) => ({
-          px: 2,
-          py: 1,
-          maxHeight: theme.spacing(10),
-          overflowY: 'hidden',
+        px: 3,
           overflowX: 'auto',
+                    display: 'flex',
+          flexWrap: 'wrap',
+          maxHeight: theme.spacing(8),
+          gap: 1,
           scrollBehavior: 'smooth',
         })}
       >
-        {categories.map((cat) => (
-          <CategoryChip
-            key={cat.id}
-            category={cat}
-            selected={selected === cat.id}
-            onClick={() => onSelect?.(cat.id)}
+   {categories.map((c) => (
+          <Chip
+            key={c.id}
+            label={c.name}
+            onClick={() => onSelect?.(c.id)}
+            color={selected === c.id ? 'primary' : 'default'}
+            variant={selected === c.id ? 'filled' : 'outlined'}
+            size="small"
           />
         ))}
-      </Stack>
+          </Box>
+
+      <IconButton
+        size="small"
+        onClick={() => scroll(200)}
+        sx={{
+          position: 'absolute',
+          right: 2,
+          top: 'calc(50% - 16px)',
+          zIndex: 1,
+          display: overflow ? { xs: 'flex', md: 'none' } : 'none',
+        }}
+      >
+        <ChevronRightIcon fontSize="small" />
+      </IconButton>
     </Box>
   );
 }

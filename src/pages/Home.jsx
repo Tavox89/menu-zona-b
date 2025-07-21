@@ -31,14 +31,13 @@ export default function Home() {
 
 
   const filteredProducts = useMemo(() => {
-    const activeCat = selectedCategory;
-    const searchTerm = query.toLowerCase();
-    return products.filter((product) => {
-      const cats = Array.isArray(product.categories) ? product.categories : [];
-      const matchesCategory =
-        activeCat === 0 || cats.some((c) => Number(c) === activeCat);
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm);
-      return (cats.length === 0 ? activeCat === 0 : matchesCategory) && matchesSearch;
+     const term = query.toLowerCase();
+    return products.filter((p) => {
+      const catMatch =
+        selectedCategory === 0 ||
+        p.categories.some((id) => Number(id) === selectedCategory);
+      const nameMatch = p.name.toLowerCase().includes(term);
+      return catMatch && nameMatch;
     });
   }, [products, selectedCategory, query]);
 

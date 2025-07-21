@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -5,7 +6,7 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { formatPrice } from '../../utils/price.js';
 
-export default function ProductCard({ product, loading = false, onOpen }) {
+function ProductCard({ product, loading = false, onOpen }) {
   if (loading) {
     return (
       <Paper elevation={3} sx={{ p: 1.5, display: 'flex', gap: 2 }}>
@@ -46,3 +47,5 @@ export default function ProductCard({ product, loading = false, onOpen }) {
     </Paper>
   );
 }
+
+export default memo(ProductCard);
