@@ -9,11 +9,11 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, alpha } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import CategoriesBar from '../category/CategoriesBar.jsx';
+
 import MobileDrawer from './MobileDrawer.jsx';
-import { glassGray } from '../../theme/index.js';
+
 
 export default function Header({
   query,
@@ -29,13 +29,13 @@ export default function Header({
   return (
     <>
       <AppBar
-       position="static"
+          position="sticky"
         sx={{
-          backgroundColor: glassGray,
+          backgroundColor: alpha('#2f2f2f', 0.6),
           backdropFilter: 'blur(10px)',
           boxShadow: 'none',
           top: 0,
-          zIndex: theme.zIndex.appBar + 1,
+             zIndex: theme.zIndex.drawer + 1,
         }}
       >
         <Toolbar sx={{ minHeight: 56, gap: 2, justifyContent: 'space-between' }}>
@@ -89,13 +89,7 @@ export default function Header({
             }}
           />
         </Container>
-        <Container maxWidth="sm" sx={{ pb: 1 }}>
-          <CategoriesBar
-            categories={categories}
-            selected={selectedCategory}
-            onSelect={onSelectCategory}
-          />
-        </Container>
+      
       </AppBar>
       <MobileDrawer
         open={open}

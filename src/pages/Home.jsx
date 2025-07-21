@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-
+import Container from '@mui/material/Container';
 import { useProducts } from '../hooks/useProducts.js';
 import Header from '../components/layout/Header.jsx'
 import ProductCard from '../components/product/ProductCard.jsx';
-
+import CategoryChips from '../components/category/CategoryChips.jsx';
 import ProductDialog from '../components/product/ProductDialog.jsx';
 import CartFab from '../components/cart/CartFab.jsx';
 import CartDrawer from '../components/cart/CartDrawer.jsx';
@@ -31,12 +31,15 @@ export default function Home() {
 
 
   const filteredProducts = useMemo(() => {
-    const search = query.toLowerCase();
-    return products.filter(
-      (p) =>
-        (selectedCategory === 0 || p.categories.includes(selectedCategory)) &&
-        p.name.toLowerCase().includes(search)
-    );
+    const activeCat = selectedCategory;
+    const searchTerm = query.toLowerCase();
+    return products.filter((product) => {
+      const cats = Array.isArray(product.categories) ? product.categories : [];
+      const matchesCategory =
+        activeCat === 0 || cats.some((c) => Number(c) === activeCat);
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm);
+      return (cats.length === 0 ? activeCat === 0 : matchesCategory) && matchesSearch;
+    });
   }, [products, selectedCategory, query]);
 
   const productCards = useMemo(
@@ -75,10 +78,17 @@ export default function Home() {
         query={query}
         onQueryChange={setQuery}
         categories={categories}
-         selectedCategory={selectedCategory}
-              onSelectCategory={handleSelectCategory}
+              selectedCategory={selectedCategory}
+        onSelectCategory={handleSelectCategory}
       />
-        <Box sx={{ px: 2, pb: 8 }}>
+        <Container maxWidth="sm">
+        <CategoryChips
+          categories={categories}
+          selected={selectedCategory}
+          onSelect={handleSelectCategory}
+        />
+      </Container>
+      <Box sx={{ px: 2, pb: 8 }}>
       {/* Product grid */}
       <Grid container spacing={2} sx={{ mt: 1 }}>
    {productCards}
