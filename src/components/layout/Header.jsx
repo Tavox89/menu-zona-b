@@ -31,7 +31,7 @@ export default function Header({
       <AppBar
           position="sticky"
         sx={{
-          backgroundColor: alpha('#2f2f2f', 0.6),
+        backgroundColor: alpha('#2f2f2f', 0.8),
           backdropFilter: 'blur(10px)',
           boxShadow: 'none',
           top: 0,
@@ -44,7 +44,7 @@ export default function Header({
             src="/zonab.png"
             alt="Menú Zona B"
             role="img"
-                  sx={{ height: 40, width: 'auto' }}
+         sx={{ height: 60, width: 'auto' }}
           />
           <Typography
             variant="h6"

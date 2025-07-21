@@ -28,15 +28,15 @@ export default function CategoryBar({ enabledCategories = [], active = 0, select
     <Box
       sx={{
         position: 'relative',
-        backgroundColor: alpha('#2f2f2f', 0.6),
-        backdropFilter: 'blur(10px)',
+           backgroundColor: alpha('#2f2f2f', 0.8),
+        backdropFilter: 'blur(8px)',
       }}
     >
       {overflow && (
         <IconButton
           size="small"
-          onClick={() => scroll(-200)}
-          sx={{ position: 'absolute', left: 4, top: 'calc(50% - 16px)', zIndex: 1 }}
+           onClick={() => scroll(-200)}
+           sx={{ position: 'absolute', left: 4, top: 'calc(50% - 24px)', zIndex: 1 }}
         >
           <ChevronLeft fontSize="small" />
         </IconButton>
@@ -45,13 +45,16 @@ export default function CategoryBar({ enabledCategories = [], active = 0, select
       <Box
         ref={scrollRef}
         sx={{
-          py: 1,
-          px: 5,
-          overflowX: 'auto',
+           px: 6,
+          pt: 1,
+          pb: 1,
           display: 'flex',
-             flexWrap: 'nowrap',
-          gap: 1,
+                flexWrap: 'wrap',
+          rowGap: 1,
+          columnGap: 1,
           maxHeight: theme.spacing(8),
+                overflowX: 'auto',
+          scrollBehavior: 'smooth',
           scrollbarWidth: 'none',
           '&::-webkit-scrollbar': { display: 'none' },
         }}
@@ -61,8 +64,16 @@ export default function CategoryBar({ enabledCategories = [], active = 0, select
             key={c.id}
             label={c.name}
             size="small"
+                clickable
             onClick={() => select?.(c.id)}
-            color={active === c.id ? 'primary' : 'default'}
+               sx={{
+              borderColor: '#fbbf24',
+              color: active === c.id ? '#000' : '#fbbf24',
+              bgcolor: active === c.id ? '#d97706' : 'transparent',
+              '&:hover': {
+                bgcolor: active === c.id ? '#d97706' : alpha('#fbbf24', 0.08),
+              },
+            }}
             variant={active === c.id ? 'filled' : 'outlined'}
           />
         ))}
@@ -71,8 +82,8 @@ export default function CategoryBar({ enabledCategories = [], active = 0, select
       {overflow && (
         <IconButton
           size="small"
-          onClick={() => scroll(+200)}
-          sx={{ position: 'absolute', right: 4, top: 'calc(50% - 16px)', zIndex: 1 }}
+          onClick={() => scroll(240)}
+            sx={{ position: 'absolute', right: 4, top: 'calc(50% - 24px)', zIndex: 1 }}
         >
           <ChevronRight fontSize="small" />
         </IconButton>
