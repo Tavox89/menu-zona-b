@@ -9,9 +9,11 @@ export default function CategoryChip({ category, selected, onClick }) {
   const handleClick = () => {
     if (onClick) onClick(category.id);
   };
+    const Icon = category.icon;
   return (
     <Chip
       label={category.name}
+            icon={Icon ? <Icon fontSize="small" /> : undefined}
       clickable
     color="primary"
       variant={selected ? 'filled' : 'outlined'}

@@ -1,11 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 
-import Typography from '@mui/material/Typography';
-
-import { getCategories } from '../api/products.js';
-import { fetchAndEnrichProducts } from '../api/products.js';
+import { useProducts } from '../hooks/useProducts.js';
 import Header from '../components/layout/Header.jsx'
 import ProductCard from '../components/product/ProductCard.jsx';
 
@@ -18,11 +15,8 @@ import { useCart } from '../context/CartContext.jsx';
 import { useWhatsAppLink } from '../hooks/useWhatsAppLink.js';
 
 export default function Home() {
-  const [categories, setCategories] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const { categories, products, loading, error } = useProducts();
+  const [selectedCategory, setSelectedCategory] = useState(0);
   const [query, setQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -30,28 +24,20 @@ export default function Home() {
   const { items, add } = useCart();
   const waLink = useWhatsAppLink(items);
 
-  // Fetch categories on mount
-  useEffect(() => {
-    setLoading(true);
-    getCategories()
-      .then((res) => setCategories(res.data || []))
-      .catch((err) => setError(err))
-      .finally(() => setLoading(false));
-  }, []);
+  const handleSelectCategory = (id) => {
+    setSelectedCategory(id);
+    setQuery('');
+  };
 
-  // Fetch products when category changes
-  useEffect(() => {
-    setLoading(true);
-    fetchAndEnrichProducts(selectedCategory)
-      .then((list) => setProducts(list))
-      .catch((err) => setError(err))
-      .finally(() => setLoading(false));
-  }, [selectedCategory]);
 
   const filteredProducts = useMemo(() => {
-    const lower = query.toLowerCase();
-    return products.filter((p) => p.name.toLowerCase().includes(lower));
-  }, [products, query]);
+    const search = query.toLowerCase();
+    return products.filter(
+      (p) =>
+        (selectedCategory === 0 || p.categories.includes(selectedCategory)) &&
+        p.name.toLowerCase().includes(search)
+    );
+  }, [products, selectedCategory, query]);
 
   const productCards = useMemo(
     () =>
@@ -90,7 +76,7 @@ export default function Home() {
         onQueryChange={setQuery}
         categories={categories}
          selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
+              onSelectCategory={handleSelectCategory}
       />
         <Box sx={{ px: 2, pb: 8 }}>
       {/* Product grid */}

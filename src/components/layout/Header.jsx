@@ -6,6 +6,8 @@ import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -27,7 +29,7 @@ export default function Header({
   return (
     <>
       <AppBar
-        position="sticky"
+       position="static"
         sx={{
           backgroundColor: glassGray,
           backdropFilter: 'blur(10px)',
@@ -42,7 +44,7 @@ export default function Header({
             src="/zonab.png"
             alt="Menú Zona B"
             role="img"
-            sx={{ height: 32, width: 'auto' }}
+                  sx={{ height: 40, width: 'auto' }}
           />
           <Typography
             variant="h6"
@@ -71,6 +73,20 @@ export default function Header({
             value={query}
             onChange={(e) => onQueryChange?.(e.target.value)}
             sx={{ mx: 0, my: 1 }}
+                 InputProps={{
+              endAdornment:
+                query !== '' ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      aria-label="clear search"
+                      onClick={() => onQueryChange?.('')}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+            }}
           />
         </Container>
         <Container maxWidth="sm" sx={{ pb: 1 }}>
