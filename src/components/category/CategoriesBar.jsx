@@ -9,7 +9,17 @@ import CategoryChip from './CategoryChip.jsx';
  */
 export default function CategoriesBar({ categories = [], selected = null, onSelect }) {
   return (
-      <Stack direction="row" flexWrap="wrap" gap={1} sx={{ px: 2, py: 1, overflowX: 'auto' }}>
+    <Stack
+      direction="row"
+      flexWrap="wrap"
+      gap={1}
+      sx={(theme) => ({
+        px: 2,
+        py: 1,
+        maxHeight: theme.spacing(10),
+        overflowY: 'hidden',
+      })}
+    >
       <CategoryChip
         category={{ id: null, name: 'Todos' }}
         selected={selected === null}

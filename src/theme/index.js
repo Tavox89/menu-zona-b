@@ -1,4 +1,7 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, alpha } from '@mui/material/styles';
+
+// Reusable glass gray background color
+export const glassGray = alpha('#2f2f2f', 0.6);
 
 /**
  * Base MUI theme for the Zona B menu. It uses a dark palette with the

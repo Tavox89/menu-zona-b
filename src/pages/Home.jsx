@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
+
 import Typography from '@mui/material/Typography';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
+
 import { getCategories } from '../api/products.js';
 import { fetchAndEnrichProducts } from '../api/products.js';
-import CategoriesBar from '../components/category/CategoriesBar.jsx';
+import Header from '../components/layout/Header.jsx'
 import ProductCard from '../components/product/ProductCard.jsx';
 
 import ProductDialog from '../components/product/ProductDialog.jsx';
@@ -86,37 +85,14 @@ export default function Home() {
 
   return (
     <>
-      <AppBar position="static" elevation={0} sx={{ bgcolor: '#000' }}>
-        <Toolbar>
-          <Box
-            component="img"
-            src="/logo.png"
-            alt="Zona B"
-            sx={{ width: 32, height: 32, mr: 1 }}
-          />
-          <Typography variant="h6" color="primary">
-            Zona B
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Box sx={{ px: 2, pb: 8 }}>
-        {/* Search bar */}
-        <Box sx={{ pt: 2, pb: 1 }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            size="small"
-            placeholder="Buscar productos…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </Box>
-      {/* Categories */}
-           <CategoriesBar
+    <Header
+        query={query}
+        onQueryChange={setQuery}
         categories={categories}
-        selected={selectedCategory}
-        onSelect={setSelectedCategory}
+         selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
       />
+        <Box sx={{ px: 2, pb: 8 }}>
       {/* Product grid */}
       <Grid container spacing={2} sx={{ mt: 1 }}>
    {productCards}
