@@ -7,11 +7,11 @@ import { getCategories } from '../api/products.js';
 import { fetchAndEnrichProducts } from '../api/products.js';
 import CategoriesBar from '../components/category/CategoriesBar.jsx';
 import ProductCard from '../components/product/ProductCard.jsx';
+import SkeletonProduct from '../components/SkeletonProduct.jsx';
 import ProductDialog from '../components/product/ProductDialog.jsx';
 import CartFab from '../components/cart/CartFab.jsx';
 import CartDrawer from '../components/cart/CartDrawer.jsx';
 import CartConfirmModal from '../components/cart/CartConfirmModal.jsx';
-import Loading from '../components/common/Loading.jsx';
 import ErrorFallback from '../components/common/ErrorFallback.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { useWhatsAppLink } from '../hooks/useWhatsAppLink.js';
@@ -19,7 +19,7 @@ import { useWhatsAppLink } from '../hooks/useWhatsAppLink.js';
 export default function Home() {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [query, setQuery] = useState('');
@@ -64,9 +64,7 @@ export default function Home() {
   if (error) {
     return <ErrorFallback error={error} />;
   }
-  if (loading && products.length === 0) {
-    return <Loading />;
-  }
+
 
   return (
     <Box sx={{ px: 2, pb: 8 }}>
@@ -88,14 +86,20 @@ export default function Home() {
       <CategoriesBar categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
       {/* Product grid */}
       <Grid container spacing={2} sx={{ mt: 1 }}>
-        {filteredProducts.map((product) => (
-          <Grid item xs={12} sm={6} md={4} key={product.id}>
-            <ProductCard
-              product={product}
-              onOpen={(p) => setSelectedProduct(p)}
-            />
-          </Grid>
-        ))}
+        {loading
+          ? Array.from({ length: 12 }).map((_, i) => (
+              <Grid item xs={12} sm={6} md={4} key={i}>
+                <SkeletonProduct />
+              </Grid>
+            ))
+          : filteredProducts.map((product) => (
+              <Grid item xs={12} sm={6} md={4} key={product.id}>
+                <ProductCard
+                  product={product}
+                  onOpen={(p) => setSelectedProduct(p)}
+                />
+              </Grid>
+            ))}
       </Grid>
       {/* Product dialog */}
       {selectedProduct && (

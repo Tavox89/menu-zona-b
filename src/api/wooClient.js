@@ -1,20 +1,19 @@
 import axios from 'axios';
 
 /**
- * Create a pre‑configured Axios client for WooCommerce API calls.
- *
- * The base URL and authentication details are pulled from environment
- * variables defined in `.env.local`. This helper centralizes common
- * configuration (base URL, basic auth and default page size) so the rest
- * of the code can simply import this client and call `.get()` or `.post()`.
+ * Cliente Axios configurado para acceder a la API de WooCommerce.
+ * Obtiene la URL base y las credenciales desde variables de entorno
+ * definidas en `.env.local`, utilizando autenticación básica con una
+ * Application Password de WordPress. Así, el resto del código sólo debe
+ * importar este cliente para realizar peticiones.
  */
-const base = `${import.meta.env.VITE_WOO_URL}/wp-json/wc/v3/`;
-
-export default axios.create({
-  baseURL: base,
-  params: {
-    consumer_key: import.meta.env.VITE_WOO_KEY,
-    consumer_secret: import.meta.env.VITE_WOO_SECRET,
-    per_page: 50,
+const woo = axios.create({
+  baseURL: `${import.meta.env.VITE_WOO_URL}/wp-json/wc/v3/`,
+  auth: {
+    username: import.meta.env.VITE_WP_USER,
+    password: import.meta.env.VITE_WP_APP_PWD,
   },
+    params: { per_page: 50 },
 });
+
+export default woo;

@@ -6,7 +6,7 @@ pnpm-debug.log*
 
 # ───────── DEPENDENCIAS ─────────
 node_modules/
-
+package-lock.json
 # ───────── SALIDA DE PRODUCCIÓN ─────────
 dist/
 build/

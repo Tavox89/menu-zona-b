@@ -13,18 +13,28 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ## WooCommerce API
 
-Set the `VITE_WOO_URL` environment variable to the base URL of your WooCommerce
-store when building for production. During development, requests under
-`/wp-json` are proxied to `https://zonabclub.com` so components can keep using
-relative paths without CORS issues.
+Configure las variables `VITE_WOO_URL`, `VITE_WP_USER` y `VITE_WP_APP_PWD` para
+conectar con tu tienda WooCommerce. Las credenciales corresponden a una
+Application Password de WordPress y se utilizan mediante autenticación básica.
+Durante el desarrollo, las peticiones bajo `/wp-json` se proxyan a
+`https://zonabclub.com` para evitar problemas de CORS.
 
-Example `.env.local`:
+Ejemplo de `.env.local`:
 
 ```ini
 VITE_WOO_URL=https://zonabclub.com
-VITE_WOO_KEY=your_consumer_key
-VITE_WOO_SECRET=your_consumer_secret
+VITE_WP_USER=tu_usuario
+VITE_WP_APP_PWD=tu_app_password
+```
+changes take effect.
+La Application Password se genera en **Users ▸ Profile ▸ Application Passwords** dentro del escritorio de WordPress. Tras modificar `vite.config.js` debes reiniciar el servidor de desarrollo para que los cambios en el proxy surtan efecto.
+changes take effect.
+## Renderizado esquelético & PWA
+
+Para generar la versión de producción con soporte offline ejecuta:
+
+```bash
+npm run build && npm run preview
 ```
 
-After modifying `vite.config.js` you must restart the development server so the proxy
-changes take effect.
+El build incluye un Service Worker que cachea las imágenes de productos y muestra pantallas en modo esqueleto mientras se cargan los datos.
