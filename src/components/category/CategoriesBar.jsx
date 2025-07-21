@@ -1,4 +1,4 @@
-import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
 import CategoryChip from './CategoryChip.jsx';
 
 /**
@@ -9,7 +9,7 @@ import CategoryChip from './CategoryChip.jsx';
  */
 export default function CategoriesBar({ categories = [], selected = null, onSelect }) {
   return (
-    <Box sx={{ display: 'flex', overflowX: 'auto', px: 2, py: 1 }}>
+      <Stack direction="row" flexWrap="wrap" gap={1} sx={{ px: 2, py: 1, overflowX: 'auto' }}>
       <CategoryChip
         category={{ id: null, name: 'Todos' }}
         selected={selected === null}
@@ -23,6 +23,6 @@ export default function CategoriesBar({ categories = [], selected = null, onSele
           onClick={() => onSelect?.(cat.id)}
         />
       ))}
-    </Box>
+   </Stack>
   );
 }

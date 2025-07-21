@@ -13,9 +13,10 @@ export default function CategoryChip({ category, selected, onClick }) {
     <Chip
       label={category.name}
       clickable
-      color={selected ? 'primary' : 'default'}
+    color="primary"
+      variant={selected ? 'filled' : 'outlined'}
       onClick={handleClick}
-      sx={{ mr: 1, mb: 1, backdropFilter: 'blur(10px)', background: 'rgba(255,255,255,0.15)' }}
+      
     />
   );
 }

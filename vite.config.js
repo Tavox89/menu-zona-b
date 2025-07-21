@@ -8,16 +8,25 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+            manifest: {
+        name: 'Zona B Menu',
+        short_name: 'Zona B',
+        start_url: '/',
+        background_color: '#000',
+        theme_color: '#d97706',
+        display: 'standalone',
+        icons: [],
+      },
       workbox: {
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/zonabclub\.com\/wp-content\/uploads\/.*\.(png|jpe?g|webp)$/i,
+              urlPattern: ({ request }) => request.destination === 'image',
             handler: 'CacheFirst',
             options: {
-              cacheName: 'product-images',
+           cacheName: 'images',
               expiration: {
-                maxEntries: 150,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 días
+                   maxEntries: 120,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
               },
             },
           },
@@ -34,4 +43,4 @@ export default defineConfig({
       },
     },
   },
-});
+});  
