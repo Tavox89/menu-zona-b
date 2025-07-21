@@ -49,7 +49,7 @@ export default function CategoryBar({ enabledCategories = [], active = 0, select
           px: 5,
           overflowX: 'auto',
           display: 'flex',
-          flexWrap: 'wrap',
+             flexWrap: 'nowrap',
           gap: 1,
           maxHeight: theme.spacing(8),
           scrollbarWidth: 'none',
