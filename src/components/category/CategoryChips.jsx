@@ -1,3 +1,3 @@
-import CategoriesBar from './CategoriesBar.jsx';
+import CategoryBar from './CategoryBar.jsx';
 
-export default CategoriesBar;
+export default CategoryBar;
