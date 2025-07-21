@@ -9,7 +9,8 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useTheme, alpha } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
+import { glassGray } from '../../theme/index.js';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
 import MobileDrawer from './MobileDrawer.jsx';
@@ -31,7 +32,7 @@ export default function Header({
       <AppBar
           position="sticky"
         sx={{
-        backgroundColor: alpha('#2f2f2f', 0.8),
+     backgroundColor: glassGray,
           backdropFilter: 'blur(10px)',
           boxShadow: 'none',
           top: 0,

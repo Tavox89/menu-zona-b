@@ -3,7 +3,8 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 
 import { useProducts } from '../hooks/useProducts.js';
-import Header from '../components/layout/Header.jsx'
+import Header from '../components/layout/Header.jsx';
+import { glassGray } from '../theme/index.js';
 import ProductCard from '../components/product/ProductCard.jsx';
 import CategoryBar from '../components/category/CategoryBar.jsx';
 import ProductDialog from '../components/product/ProductDialog.jsx';
@@ -27,17 +28,18 @@ export default function Home() {
   const handleSelectCategory = (id) => {
     setSelectedCategory(id);
     setQuery('');
+    window.scrollTo({ top: 0 });
   };
 
-
   const filteredProducts = useMemo(() => {
-      const term = query.toLowerCase();
+    const term = query.toLowerCase();
     const result = products.filter((p) => {
       const byCat = selectedCategory === 0 || p.catIds.includes(selectedCategory);
       const byName = p.name.toLowerCase().includes(term);
       return byCat && byName;
     });
-        if (result.length === 0) {
+
+    if (result.length === 0) {
       console.log('filteredProducts is 0', { selectedCategory, term });
     }
     return result;
@@ -61,10 +63,9 @@ export default function Home() {
           )),
     [loading, filteredProducts]
   );
+
   const handleSendWhatsApp = () => {
-    if (waLink) {
-      window.open(waLink, '_blank');
-    }
+    if (waLink) window.open(waLink, '_blank');
   };
 
   // Error handling
@@ -72,55 +73,61 @@ export default function Home() {
     return <ErrorFallback error={error} />;
   }
 
-
   return (
     <>
-    <Header
+      <Header
         query={query}
         onQueryChange={setQuery}
         categories={categories}
-              selectedCategory={selectedCategory}
+        selectedCategory={selectedCategory}
         onSelectCategory={handleSelectCategory}
       />
+
+      {/* Barra de categorías con efecto “glass” */}
+      <Box sx={{ backgroundColor: glassGray, backdropFilter: 'blur(10px)' }}>
         <CategoryBar
-        enabledCategories={categories}
-        active={selectedCategory}
-        select={handleSelectCategory}
-      />
-      <Box sx={{ px: 2, pb: 8 }}>
-      {/* Product grid */}
-      <Grid container spacing={2} sx={{ mt: 1 }}>
-   {productCards}
-      </Grid>
-      {/* Product dialog */}
-      {selectedProduct && (
-        <ProductDialog
-          open={Boolean(selectedProduct)}
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          onAdd={(item) => add(item)}
+          enabledCategories={categories}
+          active={selectedCategory}
+          select={handleSelectCategory}
         />
-      )}
-      {/* Cart */}
-      <CartFab count={items.length} onClick={() => setDrawerOpen(true)} />
-      <CartDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        onReview={() => {
-          setDrawerOpen(false);
-          setConfirmOpen(true);
-        }}
-        onSend={() => {
-          setDrawerOpen(false);
-          handleSendWhatsApp();
-        }}
-      />
-      <CartConfirmModal
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        onSubmit={() => handleSendWhatsApp()}
-      />
-    </Box>
-      </>
+      </Box>
+
+      {/* Grid de productos y controles */}
+      <Box sx={{ px: 2, pb: 8 }}>
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          {productCards}
+        </Grid>
+
+        {selectedProduct && (
+          <ProductDialog
+            open={Boolean(selectedProduct)}
+            product={selectedProduct}
+            onClose={() => setSelectedProduct(null)}
+            onAdd={(item) => add(item)}
+          />
+        )}
+
+        <CartFab count={items.length} onClick={() => setDrawerOpen(true)} />
+
+        <CartDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          onReview={() => {
+            setDrawerOpen(false);
+            setConfirmOpen(true);
+          }}
+          onSend={() => {
+            setDrawerOpen(false);
+            handleSendWhatsApp();
+          }}
+        />
+
+        <CartConfirmModal
+          open={confirmOpen}
+          onClose={() => setConfirmOpen(false)}
+          onSubmit={handleSendWhatsApp}
+        />
+      </Box>
+    </>
   );
 }

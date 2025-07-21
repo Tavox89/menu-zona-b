@@ -17,7 +17,7 @@ export function useProducts() {
            .then((list) =>
         list.map((p) => ({
           ...p,
-          catIds: p.categories.map((c) => Number(c.id || c)),
+         catIds: p.categories.map((c) => Number(c?.id ?? c)),
         }))
       )
       .then((normalized) => setProducts(normalized))
