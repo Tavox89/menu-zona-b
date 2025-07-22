@@ -9,8 +9,11 @@ import Stack from '@mui/material/Stack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import CloseIcon from '@mui/icons-material/Close';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { useCart } from '../../context/CartContext.jsx';
-import { formatPrice } from '../../utils/price.js';
+import { useUsdToBsRate } from '../../context/RateContext.jsx';
+import { formatPrice, formatBs } from '../../utils/price.js';
 
 /**
  * Bottom drawer displaying the cart contents. Each line item can be
@@ -20,6 +23,7 @@ import { formatPrice } from '../../utils/price.js';
  */
 export default function CartDrawer({ open, onClose, onReview, onSend }) {
   const { items, update, remove, subtotal } = useCart();
+    const rate = useUsdToBsRate();
   const handleDecrement = (id, qty) => {
     if (qty <= 1) return;
     update(id, { qty: qty - 1 });
@@ -30,9 +34,12 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
   return (
     <Drawer anchor="bottom" open={open} onClose={onClose}>
       <Box sx={{ p: 2, pb: 4, width: '100vw' }}>
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Tu pedido
-        </Typography>
+             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+          <Typography variant="h6">Tu pedido</Typography>
+          <IconButton onClick={onClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
         {items.length === 0 ? (
           <Typography variant="body2" color="text.secondary">
             Tu carrito está vacío.
@@ -71,14 +78,20 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
               ))}
             </List>
             <Typography variant="subtitle1" sx={{ mt: 2 }}>
-              Subtotal {formatPrice(subtotal)}
+               Total {formatPrice(subtotal)} ({formatBs(subtotal, rate)})
             </Typography>
-            <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-              <Button variant="contained" color="primary" onClick={onSend} fullWidth>
-                Enviar WhatsApp
+                      <Stack spacing={1} sx={{ mt: 2 }}>
+              <Button variant="contained" color="primary" onClick={onReview} fullWidth>
+                Procesar pago
               </Button>
-              <Button variant="outlined" color="secondary" onClick={onReview} fullWidth>
-                Revisar
+                   <Button
+                variant="contained"
+                startIcon={<WhatsAppIcon />}
+                onClick={onSend}
+                fullWidth
+                sx={{ backgroundColor: '#25D366', '&:hover': { backgroundColor: '#1ebe5d' } }}
+              >
+                Pedido por WhatsApp
               </Button>
             </Stack>
           </>

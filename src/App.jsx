@@ -1,6 +1,7 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import theme from './theme/index.js';
 import { CartProvider } from './context/CartContext.jsx';
+import { RateProvider } from './context/RateContext.jsx';
 import AppRouter from './router/index.jsx';
 
 /**
@@ -13,9 +14,11 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <CartProvider>
-        <AppRouter />
-      </CartProvider>
+     <RateProvider>
+        <CartProvider>
+          <AppRouter />
+        </CartProvider>
+      </RateProvider>
     </ThemeProvider>
   );
 }

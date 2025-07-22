@@ -8,7 +8,7 @@ import ProductCard from '../components/product/ProductCard.jsx';
 import Typography from '@mui/material/Typography';
 import CategoryBar from '../components/category/CategoryBar.jsx';
 import ProductDialog from '../components/product/ProductDialog.jsx';
-import CartFab from '../components/cart/CartFab.jsx';
+import CartFooter from '../components/cart/CartFooter.jsx';
 import CartDrawer from '../components/cart/CartDrawer.jsx';
 import CartConfirmModal from '../components/cart/CartConfirmModal.jsx';
 
@@ -109,7 +109,7 @@ export default function Home() {
           />
         )}
 
-        <CartFab count={items.length} onClick={() => setDrawerOpen(true)} />
+           <CartFooter onClick={() => setDrawerOpen(true)} />
 
         <CartDrawer
           open={drawerOpen}

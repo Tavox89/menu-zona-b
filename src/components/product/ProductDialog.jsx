@@ -13,8 +13,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Radio from '@mui/material/Radio';
 import CloseIcon from '@mui/icons-material/Close';
-import { formatPrice } from '../../utils/price.js';
-
+import { formatPrice, formatBs } from '../../utils/price.js';
+import { useUsdToBsRate } from '../../context/RateContext.jsx';
 
 /**
  * Modal dialog showing product details and extras selection. Users can
@@ -29,7 +29,7 @@ import { formatPrice } from '../../utils/price.js';
 export default function ProductDialog({ open, product, onClose, onAdd }) {
   const [qty, setQty] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState({});
-
+  const rate = useUsdToBsRate();
   if (!product) return null;
 
   const { extras = [] } = product;
@@ -97,9 +97,9 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
         <Typography variant="h5" mb={1}>
           {formatPrice(Number(product.price))}
         </Typography>
-        {/* Show Bs price placeholder */}
+     
         <Typography variant="body2" color="text.secondary" mb={2}>
-          Bs 0
+              {formatBs(Number(product.price), rate)}
         </Typography>
         {extras.map((grp, gIndex) => (
           <Box key={grp.label} sx={{ mb: 1 }}>
