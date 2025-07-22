@@ -3,8 +3,8 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 
 import useMenuData from '../hooks/useMenuData.js';
-import Header from '../components/layout/Header.jsx';
-import { glassGray } from '../theme/index.js';
+  import Header from '../components/layout/Header.jsx';
+import { useTheme } from '@mui/material/styles';
 import ProductCard from '../components/product/ProductCard.jsx';
 import CategoryBar from '../components/category/CategoryBar.jsx';
 import ProductDialog from '../components/product/ProductDialog.jsx';
@@ -30,6 +30,7 @@ export default function Home() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { items, add } = useCart();
   const waLink = useWhatsAppLink(items);
+    const theme = useTheme();
 
   const handleSelectCategory = (id) => {
      setActiveCat(id);
@@ -65,20 +66,13 @@ export default function Home() {
 
   return (
     <>
-      <Header
-        query={query}
-        onQueryChange={setQuery}
-        categories={categories}
-        selectedCategory={activeCat}
-        onSelectCategory={handleSelectCategory}
-      />
+     <Header query={query} onQueryChange={setQuery} />
 
-      {/* Barra de categorías con efecto “glass” */}
-      <Box sx={{ backgroundColor: glassGray, backdropFilter: 'blur(10px)' }}>
+    <Box sx={{ position: 'sticky', top: 56, zIndex: theme.zIndex.appBar - 1 }}>
         <CategoryBar
-                categories={categories}
-          activeId={activeCat}
-          onSelect={handleSelectCategory}
+            enabledCategories={categories}
+          active={activeCat}
+          select={handleSelectCategory}
         />
       </Box>
 
