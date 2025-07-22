@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
+import FastfoodIcon from '@mui/icons-material/Fastfood';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Radio from '@mui/material/Radio';
@@ -30,6 +31,8 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
   const [qty, setQty] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState({});
   const rate = useUsdToBsRate();
+    const img = product.images?.[0]?.src || product.image || '/placeholder.png';
+  const description = product.short_description || product.description || '';
   if (!product) return null;
 
   const { extras = [] } = product;
@@ -94,15 +97,38 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
         </IconButton>
       </DialogTitle>
       <DialogContent dividers>
-        <Typography variant="h5" mb={1}>
+              {img && (
+          <Box
+            component="img"
+            src={img}
+            alt={product.name}
+            loading="lazy"
+            sx={{
+              width: '100%',
+              maxHeight: { xs: 200, sm: 300 },
+              objectFit: 'cover',
+              mb: 2,
+            }}
+          />
+        )}
+        <Typography variant="h5" mb={0.5}>
           {formatPrice(Number(product.price))}
         </Typography>
      
-        <Typography variant="body2" color="text.secondary" mb={2}>
-              {formatBs(Number(product.price), rate)}
+     
+        <Typography variant="body2" color="text.secondary" mb={description ? 1 : 2}>
+          {formatBs(Number(product.price), rate)}
         </Typography>
+              {description && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 2 }}
+            dangerouslySetInnerHTML={{ __html: description }}
+          />
+        )}
         {extras.map((grp, gIndex) => (
-          <Box key={grp.label} sx={{ mb: 1 }}>
+             <Box key={grp.label || gIndex} sx={{ mb: 1, pb: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
             {grp.label && (
               <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
                 {grp.label}
@@ -136,7 +162,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
           <TextField
             value={qty}
             size="small"
-            inputProps={{ readOnly: true, style: { textAlign: 'center', width: 40 } }}
+            inputProps={{ readOnly: true, style: { textAlign: 'center', width: 40, fontSize: '1.25rem' } }}
           />
           <Button variant="outlined" onClick={() => handleQtyChange(1)}>
             +
@@ -144,8 +170,14 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" onClick={handleAdd} color="primary">
-          Añadir al carrito
+           <Button onClick={onClose}>Seguir viendo</Button>
+        <Button
+          variant="contained"
+          onClick={handleAdd}
+          color="primary"
+          startIcon={<FastfoodIcon />}
+        >
+          Agregar al pedido
         </Button>
       </DialogActions>
     </Dialog>
