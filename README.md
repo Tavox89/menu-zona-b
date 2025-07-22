@@ -11,24 +11,20 @@ Currently, two official plugins are available:
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 
-## WooCommerce API
+## Tavox Menu API
 
-Configure las variables `VITE_WOO_URL`, `VITE_WP_USER` y `VITE_WP_APP_PWD` para
-conectar con tu tienda WooCommerce. Las credenciales corresponden a una
-Application Password de WordPress y se utilizan mediante autenticación básica.
-Durante el desarrollo, las peticiones bajo `/wp-json` se proxyan a
-`https://zonabclub.com` para evitar problemas de CORS.
+Configura la variable `VITE_TAVOX_API_URL` con la URL base de tu sitio WordPress.
+Los datos de categorías y productos se obtienen desde los endpoints públicos
+`/wp-json/tavox/v1/*` y no requieren autenticación.
 
 Ejemplo de `.env.local`:
 
 ```ini
-VITE_WOO_URL=https://zonabclub.com
-VITE_WP_USER=tu_usuario
-VITE_WP_APP_PWD=tu_app_password
+VITE_TAVOX_API_URL=https://zonabclub.com
 ```
-changes take effect.
-La Application Password se genera en **Users ▸ Profile ▸ Application Passwords** dentro del escritorio de WordPress. Tras modificar `vite.config.js` debes reiniciar el servidor de desarrollo para que los cambios en el proxy surtan efecto.
-changes take effect.
+
+Las credenciales de WooCommerce se mantienen sólo para el checkout y se
+encuentran comentadas en `src/api/wooClient.js`.
 ## Renderizado esquelético & PWA
 
 Para generar la versión de producción con soporte offline ejecuta:

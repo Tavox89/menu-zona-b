@@ -8,10 +8,13 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Radio from '@mui/material/Radio';
 import CloseIcon from '@mui/icons-material/Close';
 import { formatPrice } from '../../utils/price.js';
-import ExtrasGroup from './ExtrasGroup.jsx';
-import { useExtrasParser } from '../../hooks/useExtrasParser.js';
+
 
 /**
  * Modal dialog showing product details and extras selection. Users can
@@ -26,24 +29,24 @@ import { useExtrasParser } from '../../hooks/useExtrasParser.js';
 export default function ProductDialog({ open, product, onClose, onAdd }) {
   const [qty, setQty] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState({});
-const parsedExtras = useExtrasParser(product, selectedExtras);
+
   if (!product) return null;
 
-  const extras = product.tavoxExtras || [];
+  const { extras = [] } = product;
 
 
-  const handleOptionChange = (groupId, value) => {
+  const handleOptionChange = (gIndex, value) => {
     setSelectedExtras((prev) => {
-      const prevValue = prev[groupId];
-      const group = extras.find((g) => g.groupId === groupId);
+    const prevValue = prev[gIndex];
+      const group = extras[gIndex];
       if (group?.multiple) {
         const values = Array.isArray(prevValue) ? [...prevValue] : [];
         if (values.includes(value)) {
-          return { ...prev, [groupId]: values.filter((v) => v !== value) };
+       return { ...prev, [gIndex]: values.filter((v) => v !== value) };
         }
-        return { ...prev, [groupId]: [...values, value] };
+         return { ...prev, [gIndex]: [...values, value] };
       }
-      return { ...prev, [groupId]: value };
+         return { ...prev, [gIndex]: value };
     });
   };
 
@@ -52,10 +55,19 @@ const parsedExtras = useExtrasParser(product, selectedExtras);
   };
 
   const handleAdd = () => {
+        const parsedExtras = [];
+    extras.forEach((grp, gi) => {
+      const sel = selectedExtras[gi];
+      if (!sel) return;
+      const selIdx = Array.isArray(sel) ? sel : [sel];
+      selIdx.forEach((oi) => {
+        const opt = grp.options[oi];
+        if (opt) parsedExtras.push({ id: `${gi}-${oi}`, label: opt.label, price: Number(opt.price) || 0 });
+      });
+    });
     const extrasTotal = parsedExtras.reduce((sum, e) => sum + e.price, 0);
     const lineTotal = qty * (Number(product.price) + extrasTotal);
-    // Generate a deterministic id based on product and selected extras
-    const extrasSignature = parsedExtras.map((e) => `${e.groupId}:${e.optionId}`).join('|');
+  const extrasSignature = parsedExtras.map((e) => e.id).join('|');
     const id = `${product.id}-${extrasSignature}`;
     const item = {
       id,
@@ -89,13 +101,33 @@ const parsedExtras = useExtrasParser(product, selectedExtras);
         <Typography variant="body2" color="text.secondary" mb={2}>
           Bs 0
         </Typography>
-        {extras.map((group) => (
-          <ExtrasGroup
-            key={group.groupId}
-            group={group}
-            selected={selectedExtras[group.groupId]}
-            onChange={(value) => handleOptionChange(group.groupId, value)}
-          />
+        {extras.map((grp, gIndex) => (
+          <Box key={grp.label} sx={{ mb: 1 }}>
+            {grp.label && (
+              <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                {grp.label}
+              </Typography>
+            )}
+            {grp.options.map((opt, oIndex) => (
+              <FormControlLabel
+                key={oIndex}
+                control={
+                  grp.multiple ? (
+                    <Checkbox
+                      checked={Array.isArray(selectedExtras[gIndex]) && selectedExtras[gIndex].includes(oIndex)}
+                      onChange={() => handleOptionChange(gIndex, oIndex)}
+                    />
+                  ) : (
+                    <Radio
+                      checked={selectedExtras[gIndex] === oIndex}
+                      onChange={() => handleOptionChange(gIndex, oIndex)}
+                    />
+                  )
+                }
+                label={`${opt.label}${opt.price > 0 ? ' (+$' + Number(opt.price).toFixed(2) + ')' : ''}`}
+              />
+            ))}
+          </Box>
         ))}
         <Stack direction="row" alignItems="center" spacing={1} mt={2}>
           <Button variant="outlined" onClick={() => handleQtyChange(-1)} disabled={qty === 1}>

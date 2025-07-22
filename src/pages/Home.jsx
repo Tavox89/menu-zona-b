@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 
-import { useProducts } from '../hooks/useProducts.js';
+import useMenuData from '../hooks/useMenuData.js';
 import Header from '../components/layout/Header.jsx';
 import { glassGray } from '../theme/index.js';
 import ProductCard from '../components/product/ProductCard.jsx';
@@ -11,14 +11,20 @@ import ProductDialog from '../components/product/ProductDialog.jsx';
 import CartFab from '../components/cart/CartFab.jsx';
 import CartDrawer from '../components/cart/CartDrawer.jsx';
 import CartConfirmModal from '../components/cart/CartConfirmModal.jsx';
-import ErrorFallback from '../components/common/ErrorFallback.jsx';
+
 import { useCart } from '../context/CartContext.jsx';
 import { useWhatsAppLink } from '../hooks/useWhatsAppLink.js';
 
 export default function Home() {
-  const { categories, products, loading, error } = useProducts();
-  const [selectedCategory, setSelectedCategory] = useState(0);
-  const [query, setQuery] = useState('');
+  const {
+    categories,
+    products,
+    loadingProducts,
+    activeCat,
+    setActiveCat,
+    query,
+    setQuery,
+  } = useMenuData();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -26,42 +32,29 @@ export default function Home() {
   const waLink = useWhatsAppLink(items);
 
   const handleSelectCategory = (id) => {
-    setSelectedCategory(id);
-    setQuery('');
+     setActiveCat(id);
     window.scrollTo({ top: 0 });
   };
 
-  const filteredProducts = useMemo(() => {
-    const term = query.toLowerCase();
-    const result = products.filter((p) => {
-      const byCat = selectedCategory === 0 || p.catIds.includes(selectedCategory);
-      const byName = p.name.toLowerCase().includes(term);
-      return byCat && byName;
-    });
-
-    if (result.length === 0) {
-      console.log('filteredProducts is 0', { selectedCategory, term });
-    }
-    return result;
-  }, [products, selectedCategory, query]);
+  const filteredProducts = products;
 
   const productCards = useMemo(
     () =>
-      loading
+      loadingProducts
         ? Array.from({ length: 12 }).map((_, i) => (
-            <Grid item xs={12} sm={6} md={4} key={i}>
+               <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
               <ProductCard loading />
             </Grid>
           ))
         : filteredProducts.map((product) => (
-            <Grid item xs={12} sm={6} md={4} key={product.id}>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
               <ProductCard
                 product={product}
                 onOpen={(p) => setSelectedProduct(p)}
               />
             </Grid>
           )),
-    [loading, filteredProducts]
+      [loadingProducts, filteredProducts]
   );
 
   const handleSendWhatsApp = () => {
@@ -69,9 +62,6 @@ export default function Home() {
   };
 
   // Error handling
-  if (error) {
-    return <ErrorFallback error={error} />;
-  }
 
   return (
     <>
@@ -79,16 +69,16 @@ export default function Home() {
         query={query}
         onQueryChange={setQuery}
         categories={categories}
-        selectedCategory={selectedCategory}
+        selectedCategory={activeCat}
         onSelectCategory={handleSelectCategory}
       />
 
       {/* Barra de categorías con efecto “glass” */}
       <Box sx={{ backgroundColor: glassGray, backdropFilter: 'blur(10px)' }}>
         <CategoryBar
-          enabledCategories={categories}
-          active={selectedCategory}
-          select={handleSelectCategory}
+                categories={categories}
+          activeId={activeCat}
+          onSelect={handleSelectCategory}
         />
       </Box>
 

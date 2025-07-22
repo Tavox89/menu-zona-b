@@ -13,7 +13,7 @@ export default defineConfig({
         short_name: 'Zona B',
         start_url: '/',
         background_color: '#000',
-        theme_color: '#d97706',
+           theme_color: '#d8ac1e',
         display: 'standalone',
         icons: [],
       },

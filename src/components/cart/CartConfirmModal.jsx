@@ -34,7 +34,7 @@ export default function CartConfirmModal({ open, onClose, onSubmit }) {
               <div>
                 <Typography variant="subtitle1">{item.name} x{item.qty}</Typography>
                 {item.extras?.map((e) => (
-                  <Typography key={e.optionId} variant="caption" display="block">
+                   <Typography key={e.id} variant="caption" display="block">
                     • {e.label} (+{formatPrice(e.price)})
                   </Typography>
                 ))}

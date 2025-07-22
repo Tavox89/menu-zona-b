@@ -48,7 +48,7 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
                   <Box sx={{ flexGrow: 1 }}>
                     <Typography variant="subtitle1">{item.name}</Typography>
                     {item.extras?.map((e) => (
-                      <Typography key={e.optionId} variant="caption" sx={{ display: 'block' }}>
+                  <Typography key={e.id} variant="caption" sx={{ display: 'block' }}>
                         • {e.label} (+{formatPrice(e.price)})
                       </Typography>
                     ))}
