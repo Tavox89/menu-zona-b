@@ -13,9 +13,14 @@ export function useWhatsAppLink(items) {
   return useMemo(() => {
     if (!items || items.length === 0) return '';
     const lines = items.map((item, index) => {
-      const extrasLines = item.extras?.map((e) => `• ${e.label} (+$${e.price.toFixed(2)})`).join('\n   ') || '';
+        const extrasLines =
+        item.extras
+          ?.map((e) => `• ${e.label} (+$${Number(e.price ?? 0).toFixed(2)})`)
+          .join('\n   ') || '';
       const extrasSection = extrasLines ? `\n   ${extrasLines}` : '';
-      return `${index + 1}\u20E3 ${item.name} x${item.qty} - $${item.basePrice.toFixed(2)}${extrasSection}`;
+         return `${index + 1}\u20E3 ${item.name} x${item.qty} - $${Number(
+        item.basePrice ?? 0
+      ).toFixed(2)}${extrasSection}`;
     });
     const subtotal = items.reduce((sum, i) => sum + i.lineTotal, 0).toFixed(2);
     const message = `*Pedido Zona B*\n${lines.join('\n')}\nSubtotal $${subtotal}`;
