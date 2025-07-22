@@ -31,6 +31,8 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
   const [qty, setQty] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState({});
   const [note, setNote] = useState('');
+  // When the description is long we show only the first few lines by default.
+  const [showFullDesc, setShowFullDesc] = useState(false);
   const rate = useUsdToBsRate();
 
   if (!product) return null;
@@ -83,6 +85,8 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
       basePrice: basePrice,
       extras: parsedExtras,
       note: note.trim(),
+      // Persist the product image on the line item for rendering in the cart
+      image: img,
       lineTotal,
     };
     onAdd?.(item);
@@ -123,12 +127,30 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
           {formatBs(Number(product.price), rate)}
         </Typography>
         {description && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mb: 2 }}
-            dangerouslySetInnerHTML={{ __html: description }}
-          />
+          <Box sx={{ mb: 2 }}>
+            {/* Description is truncated to 3 lines by default. When showFullDesc is true the full text is displayed. */}
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: showFullDesc ? 'none' : 3,
+              }}
+              dangerouslySetInnerHTML={{ __html: description }}
+            />
+            {description.length > 150 && (
+              <Typography
+                variant="caption"
+                color="primary.main"
+                sx={{ cursor: 'pointer', textDecoration: 'underline' }}
+                onClick={() => setShowFullDesc((prev) => !prev)}
+              >
+                {showFullDesc ? 'Mostrar menos' : 'Seguir leyendo'}
+              </Typography>
+            )}
+          </Box>
         )}
         {extras.map((grp, gIndex) => (
           <Box key={grp.label || gIndex} sx={{ mb: 1, pb: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -169,13 +191,14 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
           </Button>
         </Stack>
         <TextField
-          label="Nota (opcional)"
+          label="Nota para cocina (opcional)"
           multiline
           rows={2}
           fullWidth
           value={note}
           onChange={(e) => setNote(e.target.value)}
           sx={{ mt: 2 }}
+          placeholder="Ej. poca salsa, sin cebolla..."
         />
       </DialogContent>
       <DialogActions>

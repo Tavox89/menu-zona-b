@@ -1,28 +1,27 @@
-/**
- * Format a numeric price into a US‑dollar string. WooCommerce products
- * expose prices as numbers; converting them to a formatted string in one
- * place avoids repeated logic and ensures consistent formatting across
- * the application.
- *
- * @param {number} price Raw price in USD
- * @returns {string} e.g. "$19.99"
- */
-export function formatPrice(price = 0) {
-  const n = Number(price);
-  if (Number.isNaN(n)) return '$0.00';
-  return `$${n.toFixed(2)}`;
-  }
+// Utilities for formatting monetary values in both USD and Bs.
+//
+// The formatPrice function formats a number as a US dollar string with
+// two decimal places. If a falsy value is provided it falls back to $0.00.
+//
+// The formatBs function takes a USD value and a conversion rate and returns
+// a string formatted in bolívares. If no rate is provided the USD amount
+// is returned unchanged. Two decimals are always shown.
+
+export function formatPrice(amount) {
+  const num = Number(amount) || 0;
+  return `$${num.toFixed(2)}`;
+}
 
 /**
- * Format a USD amount converted to bolívares using the given rate.
- * The resulting string is prefixed with "Bs" and uses two decimal digits.
+ * Convert a USD amount into bolívares using the provided rate.
  *
- * @param {number} price Price in USD
- * @param {number} rate  Conversion rate USD -> Bs
- * @returns {string} e.g. "Bs 600.00"
+ * @param {number} usd The amount in US dollars
+ * @param {number} rate The USD→Bs conversion rate
+ * @returns {string} A string like `Bs 123.45`
  */
-export function formatBs(price = 0, rate = 1) {
-  const n = Number(price) * Number(rate);
-  if (Number.isNaN(n)) return 'Bs 0.00';
-  return `Bs ${n.toFixed(2)}`;
+export function formatBs(usd, rate) {
+  const u = Number(usd) || 0;
+  const r = Number(rate) || 0;
+  const converted = r > 0 ? u * r : u;
+  return `Bs ${converted.toFixed(2)}`;
 }

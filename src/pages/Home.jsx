@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import Fab from '@mui/material/Fab';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 import useMenuData from '../hooks/useMenuData.js';
 import Header from '../components/layout/Header.jsx';
@@ -29,6 +31,16 @@ export default function Home() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { items, add } = useCart();
 
+  // Show a floating scroll‑to‑top button when the user scrolls down a bit
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  useEffect(() => {
+    const onScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const handleSelectCategory = (id) => {
     setActiveCat(id);
     // Smooth scroll to top when category changes
@@ -48,12 +60,12 @@ export default function Home() {
     () =>
       loadingProducts
         ? Array.from({ length: 12 }).map((_, i) => (
-            <Grid item xs={12} sm={12} md={6} lg={4} key={i}>
+            <Grid item xs={12} sm={12} md={4} lg={3} key={i}>
               <ProductCard loading />
             </Grid>
           ))
         : filteredProducts.map((product) => (
-            <Grid item xs={12} sm={12} md={6} lg={4} key={product.id}>
+            <Grid item xs={12} sm={12} md={4} lg={3} key={product.id}>
               <ProductCard
                 product={product}
                 onOpen={(p) => setSelectedProduct(p)}
@@ -152,6 +164,22 @@ export default function Home() {
           onClose={() => setConfirmOpen(false)}
           onSubmit={handleSendWhatsApp}
         />
+
+        {/* Floating scroll to top button */}
+        <Fab
+          color="primary"
+          size="small"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          sx={{
+            position: 'fixed',
+            bottom: { xs: 80, sm: 88 },
+            right: 16,
+            zIndex: (theme) => theme.zIndex.tooltip,
+            display: showScrollTop ? 'flex' : 'none',
+          }}
+        >
+          <KeyboardArrowUpIcon />
+        </Fab>
       </Box>
     </>
   );

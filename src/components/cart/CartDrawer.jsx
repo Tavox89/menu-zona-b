@@ -50,10 +50,38 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
               {items.map((item) => (
                 <ListItem
                   key={item.id}
-                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
+                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', py: 1 }}
                 >
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="subtitle1">{item.name}</Typography>
+                  {/* Thumbnail */}
+                  <Box
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      flexShrink: 0,
+                      borderRadius: 1,
+                      overflow: 'hidden',
+                      mr: 1,
+                    }}
+                  >
+                    <img
+                      src={item.image || '/placeholder.png'}
+                      alt={item.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      loading="lazy"
+                    />
+                  </Box>
+                  {/* Details */}
+                  <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {item.name}
+                    </Typography>
                     {item.extras?.map((e) => (
                       <Typography key={e.id} variant="caption" sx={{ display: 'block' }}>
                         • {e.label} (+{formatPrice(e.price)})
@@ -64,8 +92,12 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
                         • {item.note}
                       </Typography>
                     )}
+                    <Typography variant="body2" sx={{ mt: 0.5 }}>
+                      {formatPrice(item.lineTotal)} ({formatBs(item.lineTotal, rate)})
+                    </Typography>
                   </Box>
-                  <Stack direction="row" spacing={0.5} alignItems="center">
+                  {/* Quantity controls */}
+                  <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 1 }}>
                     <IconButton
                       size="small"
                       onClick={() => handleDecrement(item.id, item.qty)}
