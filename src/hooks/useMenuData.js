@@ -29,19 +29,26 @@ export default function useMenuData() {
 
     let mounted = true;
     setLoadingProducts(true);
-    fetchProducts({ category: activeCat, q: query })
+  fetchProducts()
       .then((data) => {
-        if (mounted) setProducts(data);
+       if (!mounted) return;
+        const normalized = Array.isArray(data)
+          ? data.map((p) => ({
+              ...p,
+              catIds: (p.categories || []).map((c) => Number(c?.id ?? c)),
+            }))
+          : [];
+        setProducts(normalized);
       })
       .finally(() => mounted && setLoadingProducts(false));
     return () => {
       mounted = false;
     };
-  }, [activeCat, query]);
+  }, []);
 
   const setActiveCat = (id) => {
     setActiveCatState(id);
-    setQuery('');
+
   };
 
   return {

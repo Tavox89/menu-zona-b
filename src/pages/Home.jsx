@@ -3,9 +3,9 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 
 import useMenuData from '../hooks/useMenuData.js';
-  import Header from '../components/layout/Header.jsx';
-import { useTheme } from '@mui/material/styles';
+import Header from '../components/layout/Header.jsx';
 import ProductCard from '../components/product/ProductCard.jsx';
+import Typography from '@mui/material/Typography';
 import CategoryBar from '../components/category/CategoryBar.jsx';
 import ProductDialog from '../components/product/ProductDialog.jsx';
 import CartFab from '../components/cart/CartFab.jsx';
@@ -30,14 +30,22 @@ export default function Home() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { items, add } = useCart();
   const waLink = useWhatsAppLink(items);
-    const theme = useTheme();
+ 
 
   const handleSelectCategory = (id) => {
      setActiveCat(id);
     window.scrollTo({ top: 0 });
   };
 
-  const filteredProducts = products;
+  const filteredProducts = useMemo(() => {
+    const term = query.toLowerCase();
+    return products.filter((p) => {
+      const byCat = activeCat === '' || p.catIds?.includes(Number(activeCat));
+      const byName = p.name.toLowerCase().includes(term);
+      return byCat && byName;
+    });
+  }, [products, activeCat, query]);
+
 
   const productCards = useMemo(
     () =>
@@ -57,6 +65,7 @@ export default function Home() {
           )),
       [loadingProducts, filteredProducts]
   );
+  const showEmpty = !loadingProducts && filteredProducts.length === 0;
 
   const handleSendWhatsApp = () => {
     if (waLink) window.open(waLink, '_blank');
@@ -84,7 +93,13 @@ export default function Home() {
         <Grid container spacing={2} sx={{ mt: 1 }}>
           {productCards}
         </Grid>
-
+      {showEmpty && (
+          <Box sx={{ mt: 3 }}>
+            <Typography align="center" color="text.secondary">
+              No hay productos en esta categoría
+            </Typography>
+          </Box>
+        )}
         {selectedProduct && (
           <ProductDialog
             open={Boolean(selectedProduct)}
