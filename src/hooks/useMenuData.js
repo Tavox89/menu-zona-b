@@ -15,8 +15,9 @@ export default function useMenuData() {
     fetchCategories()
       .then((data) => {
         if (!mounted) return;
-        setCategories(data);
-        if (data.length > 0) setActiveCat(data[0].id);
+        const all = { id: '', name: 'Todo' };
+        setCategories([all, ...data]);
+        setActiveCat('');
       })
       .finally(() => mounted && setLoadingCategories(false));
     return () => {
@@ -25,7 +26,7 @@ export default function useMenuData() {
   }, []);
 
   useEffect(() => {
-    if (!activeCat && query === '') return;
+
     let mounted = true;
     setLoadingProducts(true);
     fetchProducts({ category: activeCat, q: query })

@@ -66,15 +66,18 @@ export default function Home() {
 
   return (
     <>
-     <Header query={query} onQueryChange={setQuery} />
+      <Header
+        query={query}
+        onQueryChange={setQuery}
+        categories={categories}
+        onSelectCategory={handleSelectCategory}
+      />
 
-    <Box sx={{ position: 'sticky', top: 56, zIndex: theme.zIndex.appBar - 1 }}>
-        <CategoryBar
-            enabledCategories={categories}
-          active={activeCat}
-          select={handleSelectCategory}
-        />
-      </Box>
+       <CategoryBar
+        enabledCategories={categories}
+        active={activeCat}
+        select={handleSelectCategory}
+      />
 
       {/* Grid de productos y controles */}
       <Box sx={{ px: 2, pb: 8 }}>
