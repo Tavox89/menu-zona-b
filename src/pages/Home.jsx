@@ -13,7 +13,6 @@ import CartDrawer from '../components/cart/CartDrawer.jsx';
 import CartConfirmModal from '../components/cart/CartConfirmModal.jsx';
 
 import { useCart } from '../context/CartContext.jsx';
-import { useWhatsAppLink } from '../hooks/useWhatsAppLink.js';
 
 export default function Home() {
   const {
@@ -29,12 +28,11 @@ export default function Home() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { items, add } = useCart();
-  const waLink = useWhatsAppLink(items);
- 
 
   const handleSelectCategory = (id) => {
-     setActiveCat(id);
-    window.scrollTo({ top: 0 });
+    setActiveCat(id);
+    // Smooth scroll to top when category changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const filteredProducts = useMemo(() => {
@@ -46,32 +44,57 @@ export default function Home() {
     });
   }, [products, activeCat, query]);
 
-
   const productCards = useMemo(
     () =>
       loadingProducts
         ? Array.from({ length: 12 }).map((_, i) => (
-               <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
+            <Grid item xs={12} sm={12} md={6} lg={4} key={i}>
               <ProductCard loading />
             </Grid>
           ))
         : filteredProducts.map((product) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
+            <Grid item xs={12} sm={12} md={6} lg={4} key={product.id}>
               <ProductCard
                 product={product}
                 onOpen={(p) => setSelectedProduct(p)}
               />
             </Grid>
           )),
-      [loadingProducts, filteredProducts]
+    [loadingProducts, filteredProducts]
   );
   const showEmpty = !loadingProducts && filteredProducts.length === 0;
 
-  const handleSendWhatsApp = () => {
-    if (waLink) window.open(waLink, '_blank');
+  // Build WhatsApp link including optional note
+  const buildWhatsAppLink = (orderItems, note = '') => {
+    if (!orderItems || orderItems.length === 0) return '';
+    const lines = orderItems.map((item, index) => {
+      const extrasLines =
+        item.extras?.map((e) => `• ${e.label} (+$${Number(e.price ?? 0).toFixed(2)})`).join('\n   ') || '';
+      const noteLine =
+        item.note && item.note.trim() !== ''
+          ? `• ${item.note.trim()}`
+          : '';
+      const extrasSection = [extrasLines, noteLine].filter(Boolean).join('\n   ');
+      const formattedExtras = extrasSection ? `\n   ${extrasSection}` : '';
+      return `${index + 1}\u20E3 ${item.name} x${item.qty} - $${Number(
+        item.basePrice ?? 0
+      ).toFixed(2)}${formattedExtras}`;
+    });
+    const subtotal = orderItems
+      .reduce((sum, i) => sum + i.lineTotal, 0)
+      .toFixed(2);
+    let message = `*Pedido Zona B*\n${lines.join('\n')}\nSubtotal $${subtotal}`;
+    if (note && note.trim() !== '') {
+      message += `\n📓 Nota: ${note.trim()}`;
+    }
+    const phone = import.meta.env.VITE_WA_PHONE || '';
+    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   };
 
-  // Error handling
+  const handleSendWhatsApp = (note = '') => {
+    const link = buildWhatsAppLink(items, note);
+    if (link) window.open(link, '_blank');
+  };
 
   return (
     <>
@@ -82,7 +105,7 @@ export default function Home() {
         onSelectCategory={handleSelectCategory}
       />
 
-       <CategoryBar
+      <CategoryBar
         enabledCategories={categories}
         active={activeCat}
         select={handleSelectCategory}
@@ -93,7 +116,7 @@ export default function Home() {
         <Grid container spacing={2} sx={{ mt: 1 }}>
           {productCards}
         </Grid>
-      {showEmpty && (
+        {showEmpty && (
           <Box sx={{ mt: 3 }}>
             <Typography align="center" color="text.secondary">
               No hay productos en esta categoría
@@ -109,7 +132,7 @@ export default function Home() {
           />
         )}
 
-           <CartFooter onClick={() => setDrawerOpen(true)} />
+        <CartFooter onClick={() => setDrawerOpen(true)} />
 
         <CartDrawer
           open={drawerOpen}

@@ -19,7 +19,7 @@ import { useUsdToBsRate } from '../../context/RateContext.jsx';
 
 /**
  * Modal dialog showing product details and extras selection. Users can
- * adjust quantity, choose extras and add the configured item to the cart.
+ * adjust quantity, choose extras, optionally add a note, and add the configured item to the cart.
  *
  * Props:
  * - open: boolean
@@ -30,26 +30,27 @@ import { useUsdToBsRate } from '../../context/RateContext.jsx';
 export default function ProductDialog({ open, product, onClose, onAdd }) {
   const [qty, setQty] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState({});
+  const [note, setNote] = useState('');
   const rate = useUsdToBsRate();
-    const img = product.images?.[0]?.src || product.image || '/placeholder.png';
-  const description = product.short_description || product.description || '';
+
   if (!product) return null;
 
+  const img = product.images?.[0]?.src || product.image || '/placeholder.png';
+  const description = product.short_description || product.description || '';
   const { extras = [] } = product;
-
 
   const handleOptionChange = (gIndex, value) => {
     setSelectedExtras((prev) => {
-    const prevValue = prev[gIndex];
+      const prevValue = prev[gIndex];
       const group = extras[gIndex];
       if (group?.multiple) {
         const values = Array.isArray(prevValue) ? [...prevValue] : [];
         if (values.includes(value)) {
-       return { ...prev, [gIndex]: values.filter((v) => v !== value) };
+          return { ...prev, [gIndex]: values.filter((v) => v !== value) };
         }
-         return { ...prev, [gIndex]: [...values, value] };
+        return { ...prev, [gIndex]: [...values, value] };
       }
-         return { ...prev, [gIndex]: value };
+      return { ...prev, [gIndex]: value };
     });
   };
 
@@ -58,7 +59,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
   };
 
   const handleAdd = () => {
-        const parsedExtras = [];
+    const parsedExtras = [];
     extras.forEach((grp, gi) => {
       const sel = selectedExtras[gi];
       if (!sel) return;
@@ -69,22 +70,26 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
       });
     });
     const extrasTotal = parsedExtras.reduce((sum, e) => sum + e.price, 0);
-    const lineTotal = qty * (Number(product.price) + extrasTotal);
-  const extrasSignature = parsedExtras.map((e) => e.id).join('|');
-    const id = `${product.id}-${extrasSignature}`;
+    const basePrice = Number(product.price) || 0;
+    const lineTotal = qty * (basePrice + extrasTotal);
+    const extrasSignature = parsedExtras.map((e) => e.id).join('|');
+    const noteSignature = note ? note.trim().replace(/\s+/g, '_') : '';
+    const id = `${product.id}-${extrasSignature}-${noteSignature}`;
     const item = {
       id,
       productId: product.id,
       name: product.name,
       qty,
-      basePrice: Number(product.price),
+      basePrice: basePrice,
       extras: parsedExtras,
+      note: note.trim(),
       lineTotal,
     };
     onAdd?.(item);
     // Reset state and close
     setQty(1);
     setSelectedExtras({});
+    setNote('');
     onClose?.();
   };
 
@@ -97,7 +102,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
         </IconButton>
       </DialogTitle>
       <DialogContent dividers>
-              {img && (
+        {img && (
           <Box
             component="img"
             src={img}
@@ -114,12 +119,10 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
         <Typography variant="h5" mb={0.5}>
           {formatPrice(Number(product.price))}
         </Typography>
-     
-     
         <Typography variant="body2" color="text.secondary" mb={description ? 1 : 2}>
           {formatBs(Number(product.price), rate)}
         </Typography>
-              {description && (
+        {description && (
           <Typography
             variant="body2"
             color="text.secondary"
@@ -128,7 +131,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
           />
         )}
         {extras.map((grp, gIndex) => (
-             <Box key={grp.label || gIndex} sx={{ mb: 1, pb: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+          <Box key={grp.label || gIndex} sx={{ mb: 1, pb: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
             {grp.label && (
               <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
                 {grp.label}
@@ -144,10 +147,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
                       onChange={() => handleOptionChange(gIndex, oIndex)}
                     />
                   ) : (
-                    <Radio
-                      checked={selectedExtras[gIndex] === oIndex}
-                      onChange={() => handleOptionChange(gIndex, oIndex)}
-                    />
+                    <Radio checked={selectedExtras[gIndex] === oIndex} onChange={() => handleOptionChange(gIndex, oIndex)} />
                   )
                 }
                 label={`${opt.label}${opt.price > 0 ? ' (+$' + Number(opt.price).toFixed(2) + ')' : ''}`}
@@ -157,7 +157,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
         ))}
         <Stack direction="row" alignItems="center" spacing={1} mt={2}>
           <Button variant="outlined" onClick={() => handleQtyChange(-1)} disabled={qty === 1}>
-            −
+            –
           </Button>
           <TextField
             value={qty}
@@ -168,15 +168,19 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
             +
           </Button>
         </Stack>
+        <TextField
+          label="Nota (opcional)"
+          multiline
+          rows={2}
+          fullWidth
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          sx={{ mt: 2 }}
+        />
       </DialogContent>
       <DialogActions>
-           <Button onClick={onClose}>Seguir viendo</Button>
-        <Button
-          variant="contained"
-          onClick={handleAdd}
-          color="primary"
-          startIcon={<FastfoodIcon />}
-        >
+        <Button onClick={onClose}>Seguir viendo</Button>
+        <Button variant="contained" onClick={handleAdd} color="primary" startIcon={<FastfoodIcon />}>
           Agregar al pedido
         </Button>
       </DialogActions>
