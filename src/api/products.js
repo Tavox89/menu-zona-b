@@ -1,43 +1,44 @@
-import woo from './wooClient.js';
+import axios from 'axios';
 import { enrichProduct } from './extras.js';
 
 /**
- * Fetch all product categories from WooCommerce.
+ * Cliente Axios sin autenticación para Tavox Menu API.
  *
- * Categories are limited to 100 items to avoid pagination on the MVP. Each
- * category object contains an `id`, `name` and other metadata which can be
- * consumed by the UI. See https://woocommerce.github.io/woocommerce-rest-api-docs/#list-all-product-categories
+ * La URL base debe apuntar al dominio de WordPress definido en VITE_WOO_URL.
  */
-export const getCategories = () =>
-  woo.get('/products/categories', { params: { per_page: 100 } });
+const api = axios.create({
+  baseURL: `${import.meta.env.VITE_WOO_URL}`,
+});
 
 /**
- * Fetch published products filtered by a specific category. When no category
- * identifier is provided you should instead call `getProducts()`.
+ * Obtener categorías visibles desde la API Tavox Menu. Devuelve una
+ * lista de objetos { id, name, slug, enabled, order, image } en el
+ * orden configurado por el administrador.
+ */
+export const getCategories = () => api.get('/wp-json/tavox/v1/categories');
+
+/**
+ * Obtener productos filtrados por categoría. Cuando el parámetro `id` es
+ * falsy se devolverán productos de todas las categorías visibles.
  *
- * @param {number|string} id WooCommerce category ID
+ * @param {number|string|undefined} id Identificador de categoría
  */
 export const getProductsByCategory = (id) =>
-  woo.get('/products', {
-    params: { category: id, status: 'publish', per_page: 100 },
-  });
+  api.get('/wp-json/tavox/v1/products', { params: { category: id } });
 
 /**
- * Fetch all published products. This helper is useful when rendering the
- * initial list of products or the “Todos” category. The default page size
- * defined in `wooClient` limits results to 50; call `per_page` here to
- * override that limit.
+ * Obtener todos los productos visibles. Envuelve la llamada al endpoint
+ * `tavox/v1/products` sin parámetros.
  */
-export const getProducts = () =>
-  woo.get('/products', { params: { status: 'publish', per_page: 100 } });
+export const getProducts = () => api.get('/wp-json/tavox/v1/products');
 
 /**
- * Fetch and enrich products with Tavox Extras metadata. This convenience
- * function wraps the raw WooCommerce product objects with a parsed
- * `tavoxExtras` property so components can easily render extras without
- * coupling to Woo metadata structure.
+ * Obtener productos y enriquecer con Tavox Extras. Si la API Tavox
+ * devuelve un array de productos con la propiedad `extras`,
+ * `enrichProduct` normalizará estos datos para proporcionar una
+ * propiedad `tavoxExtras` que coincide con el formato esperado por el UI.
  *
- * @param {number|string|undefined} category Optional WooCommerce category ID
+ * @param {number|string|undefined} category Identificador de categoría opcional
  */
 export const fetchAndEnrichProducts = async (category) => {
   const { data } = category
