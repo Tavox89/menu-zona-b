@@ -16,6 +16,8 @@ import Radio from '@mui/material/Radio';
 import CloseIcon from '@mui/icons-material/Close';
 import { formatPrice, formatBs } from '../../utils/price.js';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';
+import DOMPurify from 'dompurify';
+
 function ProductPreview({ src, alt, extrasCount }) {
   const [zoom, setZoom] = useState(false);
   if (!src) return null;
@@ -69,6 +71,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
 
   const img = product.image || product.images?.[0]?.src || '';
   const description = product.short_description || product.description || '';
+    const safeHTML = DOMPurify.sanitize(description || '');
   const { extras = [] } = product;
   const usd = Number(product.price_usd ?? product.price) || 0;
   const priceUsd = formatPrice(usd);
@@ -150,10 +153,17 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
               {priceBs}
             </Typography>
           </Box>
-            {description && (
-            <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
-              {description}
-            </Typography>
+                 {safeHTML && (
+            <Box
+              sx={{
+                mt: 1,
+                fontSize: 14,
+                lineHeight: 1.35,
+                '& ul': { pl: 2, mb: 0 },
+                '& li': { mb: 0.5 },
+              }}
+              dangerouslySetInnerHTML={{ __html: safeHTML }}
+            />
           )}
         {extras.map((grp, gIndex) => (
           <Box key={grp.label || gIndex} sx={{ mb: 1, pb: 1, borderBottom: '1px solid', borderColor: 'divider' }}>

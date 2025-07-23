@@ -1,6 +1,7 @@
 
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 const HEADER_HEIGHT = 112;
+const FOOTER_HEIGHT = 64;
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
@@ -35,7 +36,7 @@ export default function MobileDrawer({ open, onClose, categories = [], onSelect 
         <CloseIcon />
       </IconButton>
 
-      <List sx={{ mt: 5 }}>
+     <List sx={{ mt: 5, overflowY: 'auto', pb: `${FOOTER_HEIGHT}px` }}>
         {categories.map((cat) => (
           <ListItemButton
             key={cat.id}
