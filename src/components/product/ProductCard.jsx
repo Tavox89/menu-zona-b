@@ -23,7 +23,7 @@ function ProductCard({ product, loading = false, onOpen }) {
         sx={{
           position: 'relative',
           width: 360,
-          height: 130,
+          height: 110,
           flexShrink: 0,
           p: 1,
           display: 'flex',
@@ -57,7 +57,7 @@ function ProductCard({ product, loading = false, onOpen }) {
       sx={(theme) => ({
         position: 'relative',
               width: 382,
-        height: 130,
+        height: 110,
         flexShrink: 0,
         p: 1,
         display: 'flex',
