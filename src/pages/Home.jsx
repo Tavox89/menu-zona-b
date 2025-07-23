@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Fab from '@mui/material/Fab';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-
+import Container from '@mui/material/Container';
 import useMenuData from '../hooks/useMenuData.js';
 import Header from '../components/layout/Header.jsx';
 import ProductCard from '../components/product/ProductCard.jsx';
@@ -60,12 +60,12 @@ export default function Home() {
     () =>
       loadingProducts
         ? Array.from({ length: 12 }).map((_, i) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
+         <Grid item sx={{ flexBasis: 365, flexGrow: 0 }} key={i}>
               <ProductCard loading />
             </Grid>
           ))
         : filteredProducts.map((product) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
+             <Grid item sx={{ flexBasis: 365, flexGrow: 0 }} key={product.id}>
               <ProductCard
                 product={product}
                 onOpen={(p) => setSelectedProduct(p)}
@@ -124,8 +124,8 @@ export default function Home() {
       />
 
       {/* Grid de productos y controles */}
-      <Box sx={{ px: 2, pb: 8 }}>
-          <Grid container spacing={2}>
+       <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, pb: 8 }}>
+          <Grid container spacing={2} justifyContent="center">
           {productCards}
         </Grid>
         {showEmpty && (
@@ -180,7 +180,7 @@ export default function Home() {
         >
           <KeyboardArrowUpIcon />
         </Fab>
-      </Box>
+      </Container>
     </>
   );
 }
