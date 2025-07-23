@@ -19,7 +19,16 @@ function ProductCard({ product, loading = false, onOpen }) {
   const { items } = useCart();
   if (loading) {
     return (
-        <Card sx={{ position: 'relative', height: 140, p: 1, display: 'flex' }}>
+      <Card
+        sx={{
+          position: 'relative',
+          width: 360,
+          height: 130,
+          flexShrink: 0,
+          p: 1,
+          display: 'flex',
+        }}
+      >
         <Skeleton width={96} height={96} />
         <Box sx={{ flexGrow: 1, ml: 1 }}>
           <Skeleton height={18} width="80%" />
@@ -47,7 +56,9 @@ function ProductCard({ product, loading = false, onOpen }) {
       onClick={() => onOpen?.(product)}
       sx={(theme) => ({
         position: 'relative',
-         height: 140,
+              width: 382,
+        height: 130,
+        flexShrink: 0,
         p: 1,
         display: 'flex',
          alignItems: 'flex-start',
