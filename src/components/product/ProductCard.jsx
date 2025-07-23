@@ -13,7 +13,7 @@ import { useUsdToBsRate } from '../../context/RateContext.jsx';
 import { useCart } from '../../context/CartContext.jsx';
 import { formatPrice, formatBs } from '../../utils/price.js';
 import noImg from '/noImagen.png';
-
+const RADIUS = 4;
 function ProductCard({ product, loading = false, onOpen }) {
   const rate = useUsdToBsRate();
   const { items } = useCart();
@@ -30,16 +30,16 @@ function ProductCard({ product, loading = false, onOpen }) {
           position: 'relative',
           p: 1,
           flexShrink: 0,
-          borderRadius: 2,
+         borderRadius: RADIUS,
           borderWidth: 1,
           borderColor: 'rgba(255,255,255,0.08)',
           backgroundColor: '#2b2b2b',
         }}
       >
-         <Skeleton width={96} height={96} style={{ borderRadius: 10 }} />
+            <Skeleton width={96} height={96} style={{ borderRadius: RADIUS }} />
         <Box sx={{ flexGrow: 1, ml: 1 }}>
-         <Skeleton height={18} width="80%" style={{ borderRadius: 10 }} />
-          <Skeleton height={14} width="40%" style={{ borderRadius: 10 }} />
+          <Skeleton height={18} width="80%" style={{ borderRadius: RADIUS }} />
+          <Skeleton height={14} width="40%" style={{ borderRadius: RADIUS }} />
   
         </Box>
      </Card>
@@ -71,7 +71,7 @@ function ProductCard({ product, loading = false, onOpen }) {
         p: 1,
          alignItems: 'flex-start',
         cursor: 'pointer',
-            borderRadius: 2,
+            borderRadius: RADIUS,
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.08)',
         backgroundColor: '#2b2b2b',
@@ -90,7 +90,7 @@ function ProductCard({ product, loading = false, onOpen }) {
       sx={{
         width: 96,
         height: 96,
-        borderRadius: 10,
+            borderRadius: RADIUS,
         objectFit: 'cover',
         flexShrink: 0,
       }}
