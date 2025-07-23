@@ -20,19 +20,26 @@ function ProductCard({ product, loading = false, onOpen }) {
   if (loading) {
     return (
       <Card
+       variant="outlined"
         sx={{
-          position: 'relative',
-          width: 360,
+        width: 382,
           height: 110,
-          flexShrink: 0,
-          p: 1,
+       
           display: 'flex',
+                   overflow: 'hidden',
+          position: 'relative',
+          p: 1,
+          flexShrink: 0,
+          borderRadius: 2,
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.08)',
+          backgroundColor: '#2b2b2b',
         }}
       >
-        <Skeleton width={96} height={96} />
+         <Skeleton width={96} height={96} style={{ borderRadius: 10 }} />
         <Box sx={{ flexGrow: 1, ml: 1 }}>
-          <Skeleton height={18} width="80%" />
-          <Skeleton height={14} width="40%" />
+         <Skeleton height={18} width="80%" style={{ borderRadius: 10 }} />
+          <Skeleton height={14} width="40%" style={{ borderRadius: 10 }} />
   
         </Box>
      </Card>
@@ -50,32 +57,44 @@ function ProductCard({ product, loading = false, onOpen }) {
   const selected = items.some((i) => i.productId === product.id);
 
   return (
-      <Card
-      elevation={3}
-          data-testid={selected ? 'in-cart' : undefined}
+       <Card
+      variant="outlined"
+      data-testid={selected ? 'in-cart' : undefined}
       onClick={() => onOpen?.(product)}
       sx={(theme) => ({
         position: 'relative',
               width: 382,
         height: 110,
+           display: 'flex',
+        overflow: 'hidden',
         flexShrink: 0,
         p: 1,
-        display: 'flex',
          alignItems: 'flex-start',
         cursor: 'pointer',
-          ...(selected && {
-          bgcolor: alpha(theme.palette.primary.main, 0.2),
-          border: `1px solid ${theme.palette.primary.main}`,
+            borderRadius: 2,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: '#2b2b2b',
+        '&:hover': { boxShadow: 6 },
+        ...(selected && {
+          backgroundColor: alpha(theme.palette.primary.main, 0.2),
+          borderColor: theme.palette.primary.main,
         }),
       })}
     >
     <Box
-        component="img"
-        src={img}
-        onError={handleError}
-        alt={product.name}
-           sx={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 1 }}
-      />
+       component="img"
+      src={img}
+      onError={handleError}
+      alt={product.name}
+      sx={{
+        width: 96,
+        height: 96,
+        borderRadius: 10,
+        objectFit: 'cover',
+        flexShrink: 0,
+      }}
+    />
             <CardContent sx={{ ml: 1, p: 1, flexGrow: 1, overflow: 'hidden' }}>
         <Typography
          
