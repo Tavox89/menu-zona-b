@@ -13,7 +13,7 @@ import ProductDialog from '../components/product/ProductDialog.jsx';
 import CartFooter from '../components/cart/CartFooter.jsx';
 import CartDrawer from '../components/cart/CartDrawer.jsx';
 import CartConfirmModal from '../components/cart/CartConfirmModal.jsx';
-
+import { formatPrice } from '../utils/price.js';
 import { useCart } from '../context/CartContext.jsx';
 
 export default function Home() {
@@ -81,21 +81,18 @@ export default function Home() {
     if (!orderItems || orderItems.length === 0) return '';
     const lines = orderItems.map((item, index) => {
       const extrasLines =
-        item.extras?.map((e) => `• ${e.label} (+$${Number(e.price ?? 0).toFixed(2)})`).join('\n   ') || '';
-      const noteLine =
-        item.note && item.note.trim() !== ''
-          ? `• ${item.note.trim()}`
-          : '';
+          item.extras
+          ?.map((e) => `• ${e.label} (+${formatPrice(e.price)})`)
+          .join('\n   ') || '';
+      const noteLine = item.note && item.note.trim() !== '' ? `• ${item.note.trim()}` : '';
       const extrasSection = [extrasLines, noteLine].filter(Boolean).join('\n   ');
       const formattedExtras = extrasSection ? `\n   ${extrasSection}` : '';
-      return `${index + 1}\u20E3 ${item.name} x${item.qty} - $${Number(
+      return `${index + 1}\u20E3 ${item.name} x${item.qty} - ${formatPrice(
         item.basePrice ?? 0
-      ).toFixed(2)}${formattedExtras}`;
+       )}${formattedExtras}`;
     });
-    const subtotal = orderItems
-      .reduce((sum, i) => sum + i.lineTotal, 0)
-      .toFixed(2);
-    let message = `*Pedido Zona B*\n${lines.join('\n')}\nSubtotal $${subtotal}`;
+     const subtotal = formatPrice(orderItems.reduce((sum, i) => sum + i.lineTotal, 0));
+    let message = `*Pedido Zona B*\n${lines.join('\n')}\nSubtotal ${subtotal}`;
     if (note && note.trim() !== '') {
       message += `\n📓 Nota: ${note.trim()}`;
     }

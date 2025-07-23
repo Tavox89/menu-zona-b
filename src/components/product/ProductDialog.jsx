@@ -16,6 +16,37 @@ import Radio from '@mui/material/Radio';
 import CloseIcon from '@mui/icons-material/Close';
 import { formatPrice, formatBs } from '../../utils/price.js';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';
+function ProductPreview({ src, alt, extrasCount }) {
+  const [zoom, setZoom] = useState(false);
+  if (!src) return null;
+  const maxHeight = extrasCount > 3 ? 200 : 270;
+  return (
+    <>
+      <Box sx={{ width: '100%', background: '#000' }}>
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          aria-label="Ver imagen completa"
+          onClick={() => setZoom(true)}
+          style={{ width: '100%', height: 'auto', objectFit: 'contain', maxHeight }}
+        />
+      </Box>
+      <Dialog fullScreen open={zoom} onClose={() => setZoom(false)}>
+        <IconButton
+          aria-label="Cerrar imagen"
+          onClick={() => setZoom(false)}
+          sx={{ position: 'absolute', top: 8, right: 8, color: 'common.white' }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', p: 2 }}>
+          <img src={src} alt={alt} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+        </Box>
+      </Dialog>
+    </>
+  );
+}
 
 /**
  * Modal dialog showing product details and extras selection. Users can
@@ -31,16 +62,17 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
   const [qty, setQty] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState({});
   const [note, setNote] = useState('');
-  // When the description is long we show only the first few lines by default.
-  const [showFullDesc, setShowFullDesc] = useState(false);
+
   const rate = useUsdToBsRate();
 
   if (!product) return null;
 
-  const img = product.images?.[0]?.src || product.image || '/placeholder.png';
+  const img = product.image || product.images?.[0]?.src || '';
   const description = product.short_description || product.description || '';
   const { extras = [] } = product;
-
+  const usd = Number(product.price_usd ?? product.price) || 0;
+  const priceUsd = formatPrice(usd);
+  const priceBs = formatBs(usd, rate);
   const handleOptionChange = (gIndex, value) => {
     setSelectedExtras((prev) => {
       const prevValue = prev[gIndex];
@@ -105,53 +137,24 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent dividers>
-        {img && (
-          <Box
-            component="img"
-            src={img}
-            alt={product.name}
-            loading="lazy"
-            sx={{
-              width: '100%',
-              maxHeight: { xs: 200, sm: 300 },
-              objectFit: 'cover',
-              mb: 2,
-            }}
-          />
-        )}
-        <Typography variant="h5" mb={0.5}>
-          {formatPrice(Number(product.price))}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" mb={description ? 1 : 2}>
-          {formatBs(Number(product.price), rate)}
-        </Typography>
-        {description && (
-          <Box sx={{ mb: 2 }}>
-            {/* Description is truncated to 3 lines by default. When showFullDesc is true the full text is displayed. */}
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                overflow: 'hidden',
-                display: '-webkit-box',
-                WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: showFullDesc ? 'none' : 3,
-              }}
-              dangerouslySetInnerHTML={{ __html: description }}
-            />
-            {description.length > 150 && (
-              <Typography
-                variant="caption"
-                color="primary.main"
-                sx={{ cursor: 'pointer', textDecoration: 'underline' }}
-                onClick={() => setShowFullDesc((prev) => !prev)}
-              >
-                {showFullDesc ? 'Mostrar menos' : 'Seguir leyendo'}
-              </Typography>
-            )}
+      <DialogContent sx={{ p: 2 }}>
+        <Stack spacing={1.5}>
+          {img && (
+            <ProductPreview src={img} alt={product.name} extrasCount={extras.length} />
+          )}
+          <Box>
+            <Typography fontSize={18} fontWeight={600}>
+              {priceUsd}
+            </Typography>
+            <Typography fontSize={15} color="primary.main">
+              {priceBs}
+            </Typography>
           </Box>
-        )}
+            {description && (
+            <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+              {description}
+            </Typography>
+          )}
         {extras.map((grp, gIndex) => (
           <Box key={grp.label || gIndex} sx={{ mb: 1, pb: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
             {grp.label && (
@@ -172,12 +175,12 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
                     <Radio checked={selectedExtras[gIndex] === oIndex} onChange={() => handleOptionChange(gIndex, oIndex)} />
                   )
                 }
-                label={`${opt.label}${opt.price > 0 ? ' (+$' + Number(opt.price).toFixed(2) + ')' : ''}`}
+              label={`${opt.label}${opt.price > 0 ? ' (+' + formatPrice(opt.price) + ')' : ''}`}
               />
             ))}
           </Box>
         ))}
-        <Stack direction="row" alignItems="center" spacing={1} mt={2}>
+       <Stack direction="row" alignItems="center" spacing={1}>
           <Button variant="outlined" onClick={() => handleQtyChange(-1)} disabled={qty === 1}>
             –
           </Button>
@@ -197,9 +200,10 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
           fullWidth
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          sx={{ mt: 2 }}
+       
           placeholder="Ej. poca salsa, sin cebolla..."
         />
+               </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Seguir viendo</Button>

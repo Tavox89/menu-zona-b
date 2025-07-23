@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { formatPrice } from '../utils/price.js';
 
 /**
  * Build a WhatsApp deep link message from the current cart items. The link
@@ -17,17 +18,17 @@ export function useWhatsAppLink(items, note = '') {
     const lines = items.map((item, index) => {
       const extrasLines =
         item.extras
-          ?.map((e) => `• ${e.label} (+$${Number(e.price ?? 0).toFixed(2)})`)
+         ?.map((e) => `• ${e.label} (+${formatPrice(e.price)})`)
           .join('\n   ') || '';
       const noteLine = item.note && item.note.trim() !== '' ? `• ${item.note.trim()}` : '';
       const extrasSection = [extrasLines, noteLine].filter(Boolean).join('\n   ');
       const formattedExtras = extrasSection ? `\n   ${extrasSection}` : '';
-      return `${index + 1}\u20E3 ${item.name} x${item.qty} - $${Number(
+         return `${index + 1}\u20E3 ${item.name} x${item.qty} - ${formatPrice(
         item.basePrice ?? 0
-      ).toFixed(2)}${formattedExtras}`;
+     )}${formattedExtras}`;
     });
-    const subtotal = items.reduce((sum, i) => sum + i.lineTotal, 0).toFixed(2);
-    let message = `*Pedido Zona B*\n${lines.join('\n')}\nSubtotal $${subtotal}`;
+    const subtotal = formatPrice(items.reduce((sum, i) => sum + i.lineTotal, 0));
+    let message = `*Pedido Zona B*\n${lines.join('\n')}\nSubtotal ${subtotal}`;
     if (note && note.trim() !== '') {
       message += `\n📓 Nota: ${note.trim()}`;
     }
