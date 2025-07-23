@@ -60,12 +60,12 @@ export default function Home() {
     () =>
       loadingProducts
         ? Array.from({ length: 12 }).map((_, i) => (
-            <Grid item xs={12} sm={12} md={4} lg={3} key={i}>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
               <ProductCard loading />
             </Grid>
           ))
         : filteredProducts.map((product) => (
-            <Grid item xs={12} sm={12} md={4} lg={3} key={product.id}>
+              <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
               <ProductCard
                 product={product}
                 onOpen={(p) => setSelectedProduct(p)}
@@ -125,7 +125,7 @@ export default function Home() {
 
       {/* Grid de productos y controles */}
       <Box sx={{ px: 2, pb: 8 }}>
-        <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid container spacing={2}>
           {productCards}
         </Grid>
         {showEmpty && (

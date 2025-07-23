@@ -1,110 +1,106 @@
 import { memo } from 'react';
-import Paper from '@mui/material/Paper';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import IconButton from '@mui/material/IconButton';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { alpha } from '@mui/material/styles';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';
+import { useCart } from '../../context/CartContext.jsx';
 import { formatPrice, formatBs } from '../../utils/price.js';
+import noImg from '/noImagen.png';
 
 function ProductCard({ product, loading = false, onOpen }) {
   const rate = useUsdToBsRate();
-  // Render loading skeletons if waiting for data
+  const { items } = useCart();
   if (loading) {
     return (
-      <Paper
-        elevation={3}
-        sx={{
-          position: 'relative',
-          p: 1.5,
-          bgcolor: '#2b2b2b',
-          borderRadius: 1,
-          display: 'flex',
-          gap: 2,
-          minHeight: 140,
-        }}
-      >
-        <Skeleton width={96} height={96} />
-        <Box sx={{ flex: 1 }}>
+    <Card sx={{ position: 'relative', height: 200, p: 1 }}>
+        <Skeleton height={110} />
+        <Box sx={{ mt: 1 }}>
           <Skeleton height={18} width="80%" />
           <Skeleton height={14} width="40%" />
-          <Skeleton height={12} width="30%" />
+  
         </Box>
-      </Paper>
+     </Card>
     );
   }
 
-  // Fallback to placeholder if image missing
-  const img = product.image || '/placeholder.png';
+  const handleError = (e) => {
+    e.target.src = noImg;
+  };
+
+  const img = product.image || noImg;
   const usd = Number(product.price_usd ?? product.price) || 0;
   const priceUsd = formatPrice(usd);
   const priceBs = formatBs(usd, rate);
+  const selected = items.some((i) => i.productId === product.id);
 
   return (
-    <Paper
+      <Card
       elevation={3}
-      sx={{
-        position: 'relative',
-        p: 1.5,
-        bgcolor: '#2b2b2b',
-        borderRadius: 1,
-        display: 'flex',
-        gap: 2,
-        minHeight: 140,
-        cursor: 'pointer',
-      }}
+          data-testid={selected ? 'in-cart' : undefined}
       onClick={() => onOpen?.(product)}
+      sx={(theme) => ({
+        position: 'relative',
+          height: 200,
+        p: 1,
+        display: 'flex',
+       flexDirection: 'column',
+        justifyContent: 'space-between',
+        cursor: 'pointer',
+          ...(selected && {
+          bgcolor: alpha(theme.palette.primary.main, 0.2),
+          border: `1px solid ${theme.palette.primary.main}`,
+        }),
+      })}
     >
-      {/* Image wrapper */}
-      <Box
-        sx={{
-          width: 96,
-          height: 96,
-          flexShrink: 0,
-          borderRadius: 1,
-          overflow: 'hidden',
-        }}
-      >
-        <img
-          src={img}
-          alt={product.name}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          loading="lazy"
-        />
-      </Box>
-      {/* Info column */}
-      <Box sx={{ flex: 1, overflow: 'hidden', pr: 1 }}>
+   <CardMedia
+        component="img"
+        src={img}
+        onError={handleError}
+        alt={product.name}
+        sx={{ height: 110, objectFit: 'cover', borderRadius: 1 }}
+      />
+      <CardContent sx={{ p: 1, flexGrow: 1, overflow: 'hidden' }}>
         <Typography
-          variant="subtitle2"
+         
           sx={{
-            fontWeight: 500,
+            fontWeight: 600,
             overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+                 display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
           }}
+             variant="body2"
         >
           {product.name}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {priceUsd}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          {priceBs}
-        </Typography>
-      </Box>
-      {/* Add icon overlay. Stop propagation so it doesn’t trigger the parent onClick twice */}
+        <Box sx={{ mt: 0.5 }}>
+          <Typography sx={{ fontSize: 15, fontWeight: 500 }}>
+            {priceUsd}
+          </Typography>
+          <Typography sx={{ fontSize: 13 }} color="secondary">
+            {priceBs}
+          </Typography>
+        </Box>
+      </CardContent>
       <IconButton
-        size="small"
+              aria-label="Agregar producto"
         onClick={(e) => {
           e.stopPropagation();
           onOpen?.(product);
         }}
         sx={{
           position: 'absolute',
-          bottom: 4,
-          right: 4,
+             bottom: 8,
+          right: 8,
+          width: 28,
+          height: 28,
           bgcolor: 'background.paper',
           color: 'primary.main',
           boxShadow: 1,
@@ -114,9 +110,9 @@ function ProductCard({ product, loading = false, onOpen }) {
           },
         }}
       >
-        <AddCircleOutlineIcon fontSize="small" />
+         <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
       </IconButton>
-    </Paper>
+    </Card>
   );
 }
 
