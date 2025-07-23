@@ -65,7 +65,7 @@ export default function Home() {
             </Grid>
           ))
         : filteredProducts.map((product) => (
-             <Grid item sx={{ flexBasis: 365, flexGrow: 0 }} key={product.id}>
+           <Grid item sx={{ flexBasis: 365, flexGrow: 0 }} key={product.id}>
               <ProductCard
                 product={product}
                 onOpen={(p) => setSelectedProduct(p)}
@@ -124,8 +124,8 @@ export default function Home() {
       />
 
       {/* Grid de productos y controles */}
-       <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, pb: 8 }}>
-          <Grid container spacing={2} justifyContent="center">
+      <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, pb: 8 }}>
+        <Grid container spacing={3} justifyContent="center" sx={{ mx: 'auto' }}>
           {productCards}
         </Grid>
         {showEmpty && (
