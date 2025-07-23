@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-
+import { getUsdToBsRate } from '../services/rate.js';
 // Context that holds the USD→Bs conversion rate. Defaults to 1 if not yet
 // loaded. Components can consume this context via the useUsdToBsRate hook.
 const RateContext = createContext(1);
@@ -13,15 +13,8 @@ export function RateProvider({ children }) {
   const [rate, setRate] = useState(1);
   useEffect(() => {
     async function loadRate() {
-      try {
-        const res = await fetch('https://clubsamsve.com/wp-json/fox-rate/v1/currencies');
-        const data = await res.json();
-        if (data && data.VEF && data.VEF.rate) {
-          setRate(Number(data.VEF.rate) || 1);
-        }
-      } catch (err) {
-        console.error('Failed to fetch conversion rate', err);
-      }
+  const value = await getUsdToBsRate();
+      setRate(value);
     }
     loadRate();
   }, []);
@@ -32,6 +25,7 @@ export function RateProvider({ children }) {
  * Consume the USD→Bs conversion rate. Returns 1 until the RateProvider
  * fetches the actual value.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useUsdToBsRate() {
   return useContext(RateContext);
 }

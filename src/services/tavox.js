@@ -1,12 +1,6 @@
-import axios from 'axios';
+import { api } from '../lib/axios.js';
 
-const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_BASE || import.meta.env.VITE_TAVOX_API_URL || '',
-  timeout: 8000,
-});
-
-export const fetchCategories = async () => {
+export async function fetchCategories() {
   try {
     const { data } = await api.get('/wp-json/tavox/v1/categories');
     return data;
@@ -14,9 +8,9 @@ export const fetchCategories = async () => {
     console.error('fetchCategories', err);
     return [];
   }
-};
+}
 
-export const fetchProducts = async ({ category = '', q = '' } = {}) => {
+export async function fetchProducts({ category = '', q = '' } = {}) {
   try {
     const { data } = await api.get('/wp-json/tavox/v1/products', {
       params: { category, q },
@@ -26,4 +20,4 @@ export const fetchProducts = async ({ category = '', q = '' } = {}) => {
     console.error('fetchProducts', err);
     return [];
   }
-};
+}

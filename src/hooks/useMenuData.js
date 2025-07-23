@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchCategories, fetchProducts } from '../api/tavox.js';
+import { fetchCategories, fetchProducts } from '../services/tavox.js';
 
 export default function useMenuData() {
   const [categories, setCategories] = useState([]);

@@ -13,14 +13,17 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ## Tavox Menu API
 
-Configura la variable `VITE_TAVOX_API_URL` con la URL base de tu sitio WordPress.
-Los datos de categorías y productos se obtienen desde los endpoints públicos
-`/wp-json/tavox/v1/*` y no requieren autenticación.
+Configura las variables `VITE_API_BASE` y `VITE_RATE_BASE` en los archivos
+`.env` y `.env.production` para apuntar al dominio de WordPress y a la API de la
+tasa respectivamente. Si `VITE_API_BASE` se deja vacío en desarrollo, Vite se
+encargará de redirigir las peticiones mediante el proxy definido en
+`vite.config.js`.
 
-Ejemplo de `.env.local`:
+Ejemplo de `.env.production`:
 
 ```ini
-VITE_TAVOX_API_URL=https://zonabclub.com
+VITE_API_BASE=https://zonabclub.com
+VITE_RATE_BASE=https://clubsamsve.com
 ```
 
 Las credenciales de WooCommerce se mantienen sólo para el checkout y se
