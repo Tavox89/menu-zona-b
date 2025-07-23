@@ -92,7 +92,7 @@ function ProductCard({ product, loading = false, onOpen }) {
         </Typography>
          <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           <Typography sx={{ fontSize: 15, fontWeight: 500 }}>{priceUsd}</Typography>
-          <Typography sx={{ fontSize: 13, color: 'secondary.main' }}>{priceBs}</Typography>
+        <Typography sx={{ fontSize: 13, color: 'primary.main' }}>{priceBs}</Typography>
         </Box>
       </CardContent>
       <IconButton

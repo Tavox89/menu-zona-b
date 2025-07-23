@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Fab from '@mui/material/Fab';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import Container from '@mui/material/Container';
+
 import useMenuData from '../hooks/useMenuData.js';
 import Header from '../components/layout/Header.jsx';
 import ProductCard from '../components/product/ProductCard.jsx';
@@ -60,15 +60,15 @@ export default function Home() {
     () =>
       loadingProducts
         ? Array.from({ length: 12 }).map((_, i) => (
-         <Grid item sx={{ flexBasis: 365, flexGrow: 0 }} key={i}>
-              <ProductCard loading />
-            </Grid>
+           <Grid item sx={{ flexBasis: 382, flexGrow: 0 }} key={i}>
+             <ProductCard loading />
+           </Grid>
           ))
         : filteredProducts.map((product) => (
-           <Grid item sx={{ flexBasis: 365, flexGrow: 0 }} key={product.id}>
-              <ProductCard
-                product={product}
-                onOpen={(p) => setSelectedProduct(p)}
+           <Grid item sx={{ flexBasis: 382, flexGrow: 0 }} key={product.id}>
+             <ProductCard
+               product={product}
+               onOpen={(p) => setSelectedProduct(p)}
               />
             </Grid>
           )),
@@ -124,15 +124,23 @@ export default function Home() {
       />
 
       {/* Grid de productos y controles */}
-      <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, pb: 8 }}>
-        <Grid container spacing={3} justifyContent="center" sx={{ mx: 'auto' }}>
+        <Box
+        component="main"
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          px: { xs: 2, sm: 3 },
+          pb: 8,
+        }}
+      >
+        <Grid container spacing={2} justifyContent="center" sx={{ maxWidth: 1200 }}>
           {productCards}
         </Grid>
-        {showEmpty && (
-          <Box sx={{ mt: 3 }}>
-            <Typography align="center" color="text.secondary">
-              No hay productos en esta categoría
-            </Typography>
+      {showEmpty && (
+        <Box sx={{ mt: 3 }}>
+          <Typography align="center" color="text.secondary">
+            No hay productos en esta categoría
+          </Typography>
           </Box>
         )}
         {selectedProduct && (
@@ -180,7 +188,7 @@ export default function Home() {
         >
           <KeyboardArrowUpIcon />
         </Fab>
-      </Container>
+            </Box>
     </>
   );
 }
