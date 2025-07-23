@@ -3,7 +3,7 @@ import axios from 'axios';
 // Cliente sin autenticación para la API de tasa. Utiliza el mismo dominio que
 // Tavox Menu (VITE_TAVOX_API_URL) y consulta el plugin fox-rate bajo
 // /wp-json/fox-rate/v1.
-const rateApi = axios.create({ baseURL: import.meta.env.VITE_TAVOX_API_URL || '' });
+const rateApi = axios.create({ baseURL: 'https://clubsamsve.com/wp-json/fox-rate/v1/currencies' || '' });
 
 /**
  * Obtiene la tasa de conversión USD → BsF a partir del plugin fox-rate.
