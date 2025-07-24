@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, Fragment } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import ScrollTopFab from '../components/layout/ScrollTopFab.jsx';
@@ -15,6 +15,7 @@ import CartConfirmModal from '../components/cart/CartConfirmModal.jsx';
 import { formatPrice } from '../utils/price.js';
 import { useCart } from '../context/CartContext.jsx';
 import { calcLine } from '../utils/cartTotals.js';
+import CategoryHeader from '../components/category/CategoryHeader.jsx';
 export default function Home() {
   const {
     categories,
@@ -77,24 +78,43 @@ const orderedProducts = useMemo(() => {
     return filteredProducts;
   }, [filteredProducts, activeCat, query, categories]);
 
-  const productCards = useMemo(
-    () =>
-      loadingProducts
-        ? Array.from({ length: 12 }).map((_, i) => (
+  const productCards = useMemo(() => {
+    if (loadingProducts) {
+      return Array.from({ length: 12 }).map((_, i) => (
         <Grid item sx={{ flexBasis: 382, flexGrow: 0 }} key={i}>
-              <ProductCard loading />
+                <ProductCard loading />
+        </Grid>
+      ));
+    }
+
+    const showHeaders = activeCat === '' && query.trim() === '';
+
+    return orderedProducts.map((product, index) => {
+      const prevCat = orderedProducts[index - 1]?.catIds?.[0];
+      const currCat = product.catIds?.[0];
+      const showHeader =
+        showHeaders && (index === 0 || prevCat !== currCat);
+      const catName = showHeader
+        ? categories.find((c) => Number(c.id) === currCat)?.name
+        : '';
+
+      return (
+        <Fragment key={`${product.id}-wrapper`}>
+          {showHeader && (
+            <Grid item xs={12}>
+              <CategoryHeader title={catName} />
             </Grid>
-          ))
-       : orderedProducts.map((product) => (
-            <Grid item sx={{ flexBasis: 382, flexGrow: 0 }} key={product.id}>
-              <ProductCard
-                product={product}
-                onOpen={(p) => setSelectedProduct(p)}
-              />
-            </Grid>
-          )),
- [loadingProducts, orderedProducts]
-  );
+          )}
+          <Grid item sx={{ flexBasis: 382, flexGrow: 0 }} key={product.id}>
+            <ProductCard
+              product={product}
+              onOpen={(p) => setSelectedProduct(p)}
+            />
+          </Grid>
+        </Fragment>
+      );
+    });
+  }, [loadingProducts, orderedProducts, activeCat, query, categories]);
   const showEmpty = !loadingProducts && orderedProducts.length === 0;
 
   // Build WhatsApp link including optional note
