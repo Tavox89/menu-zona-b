@@ -49,7 +49,7 @@ export default function Home() {
   const filteredProducts = useMemo(() => {
     const term = query.toLowerCase();
     return products.filter((p) => {
-          const matchesName = p.name.toLowerCase().includes(term);
+    const matchesName = p.name.toLowerCase().includes(term);
       if (term !== '') {
         return matchesName; // global search ignores active category
       }
@@ -57,26 +57,45 @@ export default function Home() {
       return byCat && matchesName;
     });
   }, [products, activeCat, query]);
+const orderedProducts = useMemo(() => {
+    if (activeCat === '' && query.trim() === '') {
+      const orderMap = {};
+      categories.slice(1).forEach((cat, idx) => {
+        orderMap[Number(cat.id)] = idx;
+      });
+      return [...filteredProducts].sort((a, b) => {
+        const aIdx = Math.min(
+          ...(a.catIds || []).map((id) => orderMap[id] ?? Infinity)
+        );
+        const bIdx = Math.min(
+          ...(b.catIds || []).map((id) => orderMap[id] ?? Infinity)
+        );
+        if (aIdx !== bIdx) return aIdx - bIdx;
+        return a.name.localeCompare(b.name);
+      });
+    }
+    return filteredProducts;
+  }, [filteredProducts, activeCat, query, categories]);
 
   const productCards = useMemo(
     () =>
       loadingProducts
         ? Array.from({ length: 12 }).map((_, i) => (
-           <Grid item sx={{ flexBasis: 382, flexGrow: 0 }} key={i}>
-             <ProductCard loading />
-           </Grid>
+        <Grid item sx={{ flexBasis: 382, flexGrow: 0 }} key={i}>
+              <ProductCard loading />
+            </Grid>
           ))
-        : filteredProducts.map((product) => (
-           <Grid item sx={{ flexBasis: 382, flexGrow: 0 }} key={product.id}>
-             <ProductCard
-               product={product}
-               onOpen={(p) => setSelectedProduct(p)}
+       : orderedProducts.map((product) => (
+            <Grid item sx={{ flexBasis: 382, flexGrow: 0 }} key={product.id}>
+              <ProductCard
+                product={product}
+                onOpen={(p) => setSelectedProduct(p)}
               />
             </Grid>
           )),
-    [loadingProducts, filteredProducts]
+ [loadingProducts, orderedProducts]
   );
-  const showEmpty = !loadingProducts && filteredProducts.length === 0;
+  const showEmpty = !loadingProducts && orderedProducts.length === 0;
 
   // Build WhatsApp link including optional note
   const buildWhatsAppLink = (orderItems, note = '') => {
