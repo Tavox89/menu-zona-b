@@ -10,6 +10,7 @@ import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 import { useCart } from '../../context/CartContext.jsx';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';

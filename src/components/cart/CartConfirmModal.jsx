@@ -57,16 +57,30 @@ export default function CartConfirmModal({ open, onClose, onSubmit }) {
                 </Typography>
               </Box>
               {/* Render extras below the name */}
-              {item.extras?.map((e) => (
-                <Typography
-                  key={e.id}
-                  variant="caption"
-                  display="block"
-                  sx={{ ml: 1.5 }}
-                >
-                  • {e.label} (+{formatPrice(e.price)})
-                </Typography>
-              ))}
+              {item.extras?.map((e) => {
+                // Some extra prices may come as formatted strings (e.g.
+                // "$1.00"). Normalise to a number before passing to
+                // formatPrice to avoid concatenating strings. If the
+                // value cannot be parsed we fall back to zero.
+                let raw = e.price ?? e.price_usd ?? 0;
+                let priceVal = 0;
+                if (typeof raw === 'string') {
+                  const stripped = raw.replace(/[^0-9.,-]/g, '');
+                  priceVal = parseFloat(stripped.replace(',', '.')) || 0;
+                } else {
+                  priceVal = Number(raw) || 0;
+                }
+                return (
+                  <Typography
+                    key={e.id}
+                    variant="caption"
+                    display="block"
+                    sx={{ ml: 1.5 }}
+                  >
+                    • {e.label} (+{formatPrice(priceVal)})
+                  </Typography>
+                );
+              })}
               {/* Render any note provided for the line */}
               {item.note && (
                 <Typography

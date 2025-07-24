@@ -34,6 +34,12 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
   const base = Number(item.basePrice ?? 0) + extrasTotal;
   const unitUsd = base;
   const lineUsd = base * (item.qty || 0);
+  // Determine if we should display a line total. When there is only one
+  // unit of the product in the cart the total would equal the unit price
+  // and displaying it again adds clutter. For quantities greater than one
+  // we show the total but render it with a smaller font size so it fits
+  // neatly on a single line.
+  const showLineTotal = (item.qty ?? 0) > 1;
   return (
     <ListItem
       sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', py: 1 }}
@@ -106,10 +112,15 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
             <DeleteIcon fontSize="small" />
           </IconButton>
         </Stack>
-        {/* Line total appears below the quantity controls */}
-        <Typography variant="body2" sx={{ mt: 0.5 }}>
-          {formatPrice(lineUsd)} ({formatBs(lineUsd, rate)})
-        </Typography>
+        {/* Line total appears below the quantity controls only when
+            more than one unit is ordered. Use a caption style to
+            minimise the vertical space taken so the text stays on one
+            line even with longer numbers. */}
+        {showLineTotal && (
+          <Typography variant="caption" sx={{ mt: 0.25 }}>
+            {formatPrice(lineUsd)} ({formatBs(lineUsd, rate)})
+          </Typography>
+        )}
       </Box>
     </ListItem>
   );
