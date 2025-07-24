@@ -48,12 +48,13 @@ export default function CategoryBar({ enabledCategories = [], active = '', selec
         ref={scrollRef}
         sx={{
     
-          display: 'flex',
-            flexWrap: 'nowrap',
+        display: 'grid',
+          gridAutoFlow: 'column',
+          gridTemplateRows: 'repeat(2, auto)',
           gap: 1,
           overflowX: 'auto',
           overflowY: 'hidden',
-              maxHeight: theme.spacing(8),
+      maxHeight: theme.spacing(8),
           scrollBehavior: 'smooth',
           scrollbarWidth: 'none',
           '&::-webkit-scrollbar': { display: 'none' },
