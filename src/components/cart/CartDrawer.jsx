@@ -16,6 +16,7 @@ import { useCart } from '../../context/CartContext.jsx';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';
 import { formatPrice, formatBs } from '../../utils/price.js';
 import { calcLine } from '../../utils/cartTotals.js';
+import { useWhatsAppLink } from '../../hooks/useWhatsAppLink.js';
 import CartItemRow from './CartItemRow.jsx';
 import { FOOTER_HEIGHT } from './CartFooter.jsx';
 
@@ -34,7 +35,7 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
   const { items, update, remove } = useCart();
   const rate = useUsdToBsRate();
   const totalUsd = items.reduce((t, it) => t + calcLine(it), 0);
-
+  const waLink = useWhatsAppLink(items);
   const handleDecrement = (id, qty) => {
     if (qty <= 1) return;
     update(id, { qty: qty - 1 });
@@ -128,6 +129,9 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
               {/* WhatsApp button with persistent white text */}
               <Button
                 variant="contained"
+                        component="a"
+                href={waLink}
+                target="_blank"
                 startIcon={<WhatsAppIcon />}
                 onClick={onSend}
                 fullWidth

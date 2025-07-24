@@ -6,8 +6,8 @@ import { useUsdToBsRate } from '../context/RateContext.jsx';
 // Map digits to their keycap emoji representation. Ensures the variation
 // selector is present so WhatsApp renders the symbol instead of �.
 const numEmoji = (n) => {
-  const map = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-  return n >= 1 && n <= 10 ? map[n] : `${n}.`;
+  const keycaps = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+  return n >= 1 && n <= 10 ? keycaps[n] : `${n}.`;
 };
 
 /**
