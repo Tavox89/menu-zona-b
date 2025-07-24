@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import IconButton from '@mui/material/IconButton';
+import Chip from '@mui/material/Chip';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { alpha } from '@mui/material/styles';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';
@@ -61,6 +62,7 @@ function ProductCard({ product, loading = false, onOpen }) {
   const usd = Number(product.price_usd ?? product.price) || 0;
   const priceUsd = formatPrice(usd);
   const priceBs = formatBs(usd, rate);
+   const outOfStock = product.in_stock && product.stock_qty === 0;
   // Determine if the product is currently in the cart and accumulate qty
   const qtyInCart = items
     .filter((i) => i.productId === product.id)
@@ -125,52 +127,68 @@ function ProductCard({ product, loading = false, onOpen }) {
           <Typography sx={{ fontSize: 13, color: 'primary.main' }}>{priceBs}</Typography>
         </Box>
       </CardContent>
-      <IconButton
-        aria-label="Agregar producto"
-        onClick={(e) => {
-          // prevent the card click event from also firing the open handler
-          e.stopPropagation();
-          onOpen?.(product);
-        }}
-        sx={{
-          position: 'absolute',
-          bottom: 8,
-          right: 8,
-          width: 28,
-          height: 28,
-          bgcolor: 'background.paper',
-          color: 'primary.main',
-          boxShadow: 1,
-          '&:hover': {
-            bgcolor: 'primary.main',
-            color: 'background.paper',
-          },
-        }}
-      >
-        {/* If the product has been added, show its quantity just to the left of the plus icon */}
-        {qtyInCart > 0 && (
-          <Box
-            sx={{
-              position: 'absolute',
-              left: -18,
-              top: 4,
+      {outOfStock ? (
+        <Chip
+          label="No disponible"
+          color="error"
+          size="small"
+          sx={{
+            position: 'absolute',
+            bottom: 8,
+            right: 8,
+            fontSize: 13,
+            fontWeight: 600,
+            textTransform: 'uppercase',
+          }}
+        />
+      ) : (
+        <IconButton
+          aria-label="Agregar producto"
+          onClick={(e) => {
+            // prevent the card click event from also firing the open handler
+            e.stopPropagation();
+            onOpen?.(product);
+          }}
+          sx={{
+            position: 'absolute',
+            bottom: 8,
+            right: 8,
+            width: 28,
+            height: 28,
+            bgcolor: 'background.paper',
+            color: 'primary.main',
+            boxShadow: 1,
+            '&:hover': {
               bgcolor: 'primary.main',
               color: 'background.paper',
-              borderRadius: 1,
-              minWidth: 16,
-              height: 16,
-              px: 0.5,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 10,
-            }}
-          >
-            {qtyInCart}
-          </Box>
-        )}
-        <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
-      </IconButton>
+            },
+          }}
+        >
+          {/* If the product has been added, show its quantity just to the left of the plus icon */}
+          {qtyInCart > 0 && (
+            <Box
+              sx={{
+                position: 'absolute',
+                left: -18,
+                top: 4,
+                bgcolor: 'primary.main',
+                color: 'background.paper',
+                borderRadius: 1,
+                minWidth: 16,
+                height: 16,
+                px: 0.5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 10,
+              }}
+            >
+              {qtyInCart}
+            </Box>
+          )}
+          <AddCircleOutlineIcon sx={{ fontSize: 20 }} />
+        </IconButton>
+      )}
     </Card>
   );
 }

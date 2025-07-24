@@ -76,6 +76,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
   const usd = Number(product.price_usd ?? product.price) || 0;
   const priceUsd = formatPrice(usd);
   const priceBs = formatBs(usd, rate);
+    const outOfStock = product.in_stock && product.stock_qty === 0;
   const handleOptionChange = (gIndex, value) => {
     setSelectedExtras((prev) => {
       const prevValue = prev[gIndex];
@@ -96,6 +97,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
   };
 
   const handleAdd = () => {
+        if (outOfStock) return;
     const parsedExtras = [];
     extras.forEach((grp, gi) => {
       const sel = selectedExtras[gi];
@@ -222,7 +224,13 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Seguir viendo</Button>
-        <Button variant="contained" onClick={handleAdd} color="primary" startIcon={<FastfoodIcon />}>
+             <Button
+          variant="contained"
+          onClick={handleAdd}
+          color="primary"
+          startIcon={<FastfoodIcon />}
+          disabled={outOfStock}
+        >
           Agregar al pedido
         </Button>
       </DialogActions>
