@@ -62,7 +62,8 @@ function ProductCard({ product, loading = false, onOpen }) {
   const usd = Number(product.price_usd ?? product.price) || 0;
   const priceUsd = formatPrice(usd);
   const priceBs = formatBs(usd, rate);
-   const outOfStock = product.in_stock && product.stock_qty === 0;
+ const stockQty = Number(product.stock_qty ?? -1);
+  const outOfStock = !product.in_stock || stockQty === 0;
   // Determine if the product is currently in the cart and accumulate qty
   const qtyInCart = items
     .filter((i) => i.productId === product.id)

@@ -76,7 +76,8 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
   const usd = Number(product.price_usd ?? product.price) || 0;
   const priceUsd = formatPrice(usd);
   const priceBs = formatBs(usd, rate);
-    const outOfStock = product.in_stock && product.stock_qty === 0;
+  const stockQty = Number(product.stock_qty ?? -1);
+  const outOfStock = !product.in_stock || stockQty === 0;
   const handleOptionChange = (gIndex, value) => {
     setSelectedExtras((prev) => {
       const prevValue = prev[gIndex];
