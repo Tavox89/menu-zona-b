@@ -135,7 +135,12 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
   return (
     <Dialog open={open} onClose={onClose} fullWidth scroll="body">
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        {product.name}
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <FastfoodIcon fontSize="small" sx={{ mr: 1 }} />
+          <Typography component="span" variant="h6">
+            {product.name}
+          </Typography>
+        </Box>
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
         </IconButton>

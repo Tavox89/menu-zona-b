@@ -154,7 +154,7 @@ export default function Home() {
           />
         )}
 
-        <CartFooter onClick={() => setDrawerOpen(true)} />
+        <CartFooter onClick={() => setDrawerOpen((prev) => !prev)} />
 
         <CartDrawer
           open={drawerOpen}

@@ -78,7 +78,13 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
       >
         {/* Header with title and close button */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="h6">Tu pedido</Typography>
+             <Typography
+            variant="h6"
+            sx={{ display: 'flex', alignItems: 'center' }}
+          >
+            <ShoppingCartIcon fontSize="small" sx={{ mr: 0.5 }} />
+            Tu pedido
+          </Typography>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>
