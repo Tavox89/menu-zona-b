@@ -118,6 +118,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
     const item = {
       id,
       productId: product.id,
+         sku: product.sku ?? '',
       name: product.name,
       qty,
       basePrice: basePrice,

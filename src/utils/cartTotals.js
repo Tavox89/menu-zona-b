@@ -34,4 +34,12 @@ export function calcLine(item) {
 export function calcSubtotal(items) {
   if (!Array.isArray(items)) return 0;
   return items.reduce((t, it) => t + calcLine(it), 0);
+  }
+
+/**
+ * Alias of calcSubtotal for clarity when the value represents the
+ * grand total in USD.
+ */
+export function calcTotalUsd(items) {
+  return calcSubtotal(items);
 }
