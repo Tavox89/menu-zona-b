@@ -49,9 +49,12 @@ export default function Home() {
   const filteredProducts = useMemo(() => {
     const term = query.toLowerCase();
     return products.filter((p) => {
+          const matchesName = p.name.toLowerCase().includes(term);
+      if (term !== '') {
+        return matchesName; // global search ignores active category
+      }
       const byCat = activeCat === '' || p.catIds?.includes(Number(activeCat));
-      const byName = p.name.toLowerCase().includes(term);
-      return byCat && byName;
+      return byCat && matchesName;
     });
   }, [products, activeCat, query]);
 
@@ -108,7 +111,10 @@ export default function Home() {
     <>
       <Header
         query={query}
-        onQueryChange={setQuery}
+           onQueryChange={(val) => {
+          setQuery(val);
+          if (val !== '') setActiveCat('');
+        }}
         categories={categories}
         onSelectCategory={handleSelectCategory}
       />
