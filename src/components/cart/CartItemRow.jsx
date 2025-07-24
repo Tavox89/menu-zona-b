@@ -9,9 +9,17 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';
 import { formatPrice, formatBs } from '../../utils/price.js';
 import { calcLine } from '../../utils/cartTotals.js';
+
+/**
+ * Render a single line in the cart with quantity controls, product image,
+ * extras, notes and per‑line pricing. When the product lacks an image we
+ * fall back to the global noImagen.png placeholder to avoid broken
+ * thumbnails. The line price displays both USD and BS values using
+ * the same helpers as the product card and modal.
+ */
 export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }) {
   const rate = useUsdToBsRate();
-    const lineUsd = calcLine(item);
+  const lineUsd = calcLine(item);
   return (
     <ListItem
       sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', py: 1 }}
@@ -27,7 +35,7 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
         }}
       >
         <img
-          src={item.image || '/placeholder.png'}
+          src={item.image || '/noImagen.png'}
           alt={item.name}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           loading="lazy"
@@ -44,11 +52,13 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
         >
           {item.name}
         </Typography>
+        {/* List selected extras under the product name */}
         {item.extras?.length > 0 && (
           <Typography variant="caption" sx={{ display: 'block', ml: 1.5 }}>
             • {item.extras.map((e) => e.label).join(', ')}
           </Typography>
         )}
+        {/* Show any customer note in italics */}
         {item.note && (
           <Typography
             variant="caption"
@@ -58,7 +68,7 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
           </Typography>
         )}
         <Typography variant="body2" sx={{ mt: 0.5 }}>
-         {formatPrice(lineUsd)} ({formatBs(lineUsd, rate)})
+          {formatPrice(lineUsd)} ({formatBs(lineUsd, rate)})
         </Typography>
       </Box>
       <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 1 }}>
