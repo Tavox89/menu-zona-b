@@ -8,7 +8,6 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';
 import { formatPrice, formatBs } from '../../utils/price.js';
-import { calcLine } from '../../utils/cartTotals.js';
 
 /**
  * Render a single line in the cart with quantity controls, product image,
@@ -19,11 +18,27 @@ import { calcLine } from '../../utils/cartTotals.js';
  */
 export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }) {
   const rate = useUsdToBsRate();
-  const lineUsd = calcLine(item);
+  // Compute totals. We explicitly parse each extra price to avoid missing
+  // additional charges when prices are formatted strings (e.g. "$1.00").
+  const extrasTotal = (item.extras ?? []).reduce((sum, e) => {
+    const raw = e.price ?? e.price_usd ?? 0;
+    let val = 0;
+    if (typeof raw === 'string') {
+      const stripped = raw.replace(/[^0-9.,-]/g, '');
+      val = parseFloat(stripped.replace(',', '.')) || 0;
+    } else {
+      val = Number(raw) || 0;
+    }
+    return sum + val;
+  }, 0);
+  const base = Number(item.basePrice ?? 0) + extrasTotal;
+  const unitUsd = base;
+  const lineUsd = base * (item.qty || 0);
   return (
     <ListItem
       sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', py: 1 }}
     >
+      {/* Image column */}
       <Box
         sx={{
           width: 48,
@@ -41,6 +56,7 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
           loading="lazy"
         />
       </Box>
+      {/* Main details: name, extras, notes and unit price */}
       <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <Typography
           variant="subtitle2"
@@ -52,13 +68,11 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
         >
           {item.name}
         </Typography>
-        {/* List selected extras under the product name */}
         {item.extras?.length > 0 && (
           <Typography variant="caption" sx={{ display: 'block', ml: 1.5 }}>
             • {item.extras.map((e) => e.label).join(', ')}
           </Typography>
         )}
-        {/* Show any customer note in italics */}
         {item.note && (
           <Typography
             variant="caption"
@@ -67,28 +81,36 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
             “{item.note}”
           </Typography>
         )}
+        {/* Unit price in USD/BS displayed under the description */}
+        <Typography variant="body2" sx={{ mt: 0.5 }}>
+          {formatPrice(unitUsd)} ({formatBs(unitUsd, rate)})
+        </Typography>
+      </Box>
+      {/* Controls and line total */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', ml: 1 }}>
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <IconButton
+            size="small"
+            onClick={() => onDecrement(item.id, item.qty)}
+            disabled={item.qty <= 1}
+          >
+            <RemoveIcon fontSize="small" />
+          </IconButton>
+          <Typography variant="body2" sx={{ width: 20, textAlign: 'center' }}>
+            {item.qty}
+          </Typography>
+          <IconButton size="small" onClick={() => onIncrement(item.id, item.qty)}>
+            <AddIcon fontSize="small" />
+          </IconButton>
+          <IconButton size="small" onClick={() => onRemove(item.id)}>
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Stack>
+        {/* Line total appears below the quantity controls */}
         <Typography variant="body2" sx={{ mt: 0.5 }}>
           {formatPrice(lineUsd)} ({formatBs(lineUsd, rate)})
         </Typography>
       </Box>
-      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 1 }}>
-        <IconButton
-          size="small"
-          onClick={() => onDecrement(item.id, item.qty)}
-          disabled={item.qty <= 1}
-        >
-          <RemoveIcon fontSize="small" />
-        </IconButton>
-        <Typography variant="body2" sx={{ width: 20, textAlign: 'center' }}>
-          {item.qty}
-        </Typography>
-        <IconButton size="small" onClick={() => onIncrement(item.id, item.qty)}>
-          <AddIcon fontSize="small" />
-        </IconButton>
-        <IconButton size="small" onClick={() => onRemove(item.id)}>
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-      </Stack>
     </ListItem>
   );
 }

@@ -54,9 +54,14 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
       sx={{ zIndex: (theme) => theme.zIndex.appBar + 2 }}
       PaperProps={{
         sx: {
+          // The drawer should sit on top of the footer. By setting a bottom offset equal
+          // to the footer height we avoid overlapping the fixed footer bar. The height
+          // remains a percentage of the viewport so that only a portion of the page
+          // is covered when the cart opens.
           height: DRAWER_HEIGHT,
           borderTopLeftRadius: 8,
           borderTopRightRadius: 8,
+          bottom: FOOTER_HEIGHT,
         },
       }}
     >
