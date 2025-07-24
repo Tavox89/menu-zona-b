@@ -123,6 +123,8 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
                 fullWidth
                 startIcon={<CreditCardIcon />}
                 sx={{ color: '#fff' }}
+                  disabled
+                title="Próximamente"
               >
                 Procesar pago
               </Button>

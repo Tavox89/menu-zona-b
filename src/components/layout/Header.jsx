@@ -31,7 +31,15 @@ export default function Header({ query, onQueryChange, categories = [], onSelect
         }}
       >
         <Toolbar sx={{ minHeight: 56, gap: 2, justifyContent: 'space-between' }}>
-          <Box component="img" src="/zonab.png" alt="Menú Zona B" sx={{ height: 60, width: 'auto' }} />
+            <Box
+            component="img"
+            src="/zonab.png"
+            alt="Menú Zona B"
+            sx={{
+              width: { xs: 40, sm: 56, md: 72 },
+              height: { xs: 40, sm: 56, md: 72 },
+            }}
+          />
           <Typography variant="h6" color="primary.main" sx={{ flexGrow: 1, textAlign: 'center', fontWeight: 600 }}>
             Menú Zona B
           </Typography>

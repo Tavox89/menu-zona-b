@@ -13,12 +13,15 @@ export default function CategoryHeader({ title }) {
     <Box
       sx={{
         width: '100%',
+             flexBasis: { xs: 'auto', sm: '100%' },
+        gridColumn: { sm: '1 / -1' },
         px: 2,
         py: 1,
         bgcolor: 'transparent',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
+           textAlign: 'center',
         textTransform: 'uppercase',
       }}
     >
