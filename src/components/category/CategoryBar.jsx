@@ -49,7 +49,7 @@ export default function CategoryBar({ enabledCategories = [], active = '', selec
         sx={{
     
           display: 'flex',
-          flexWrap: 'wrap',
+            flexWrap: 'nowrap',
           gap: 1,
           overflowX: 'auto',
           overflowY: 'hidden',
