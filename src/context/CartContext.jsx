@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-
+import { calcLine } from '../utils/cartTotals.js';
 /**
  * CartContext encapsulates the shopping cart state and operations. It
  * persists the cart in localStorage so users can reload the app without
@@ -45,11 +45,12 @@ export const CartProvider = ({ children }) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
-        return prev.map((i) =>
-          i.id === item.id ? { ...i, qty: i.qty + item.qty, lineTotal: i.lineTotal + item.lineTotal } : i
-        );
+        const updated = { ...existing, qty: existing.qty + item.qty };
+        updated.lineTotal = calcLine(updated);
+        return prev.map((i) => (i.id === item.id ? updated : i));
       }
-      return [...prev, item];
+    const newItem = { ...item, lineTotal: calcLine(item) };
+      return [...prev, newItem];
     });
   };
 
@@ -62,8 +63,7 @@ export const CartProvider = ({ children }) => {
       prev.map((i) => {
         if (i.id !== id) return i;
         const updated = { ...i, ...changes };
-        const extrasTotal = updated.extras.reduce((sum, e) => sum + e.price, 0);
-        updated.lineTotal = updated.qty * (updated.basePrice + extrasTotal);
+           updated.lineTotal = calcLine(updated);
         return updated;
       })
     );
@@ -83,7 +83,7 @@ export const CartProvider = ({ children }) => {
 
   // Compute subtotal whenever items change
   const subtotal = useMemo(
-    () => items.reduce((sum, item) => sum + item.lineTotal, 0),
+     () => items.reduce((sum, item) => sum + calcLine(item), 0),
     [items]
   );
 

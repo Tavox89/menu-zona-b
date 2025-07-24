@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { formatPrice } from '../utils/price.js';
-
+import { calcLine } from '../utils/cartTotals.js';
 /**
  * Build a WhatsApp deep link message from the current cart items. The link
  * includes a formatted list of products, their quantities and selected
@@ -27,7 +27,7 @@ export function useWhatsAppLink(items, note = '') {
         item.basePrice ?? 0
      )}${formattedExtras}`;
     });
-    const subtotal = formatPrice(items.reduce((sum, i) => sum + i.lineTotal, 0));
+     const subtotal = formatPrice(items.reduce((sum, i) => sum + calcLine(i), 0));
     let message = `*Pedido Zona B*\n${lines.join('\n')}\nSubtotal ${subtotal}`;
     if (note && note.trim() !== '') {
       message += `\n📓 Nota: ${note.trim()}`;

@@ -14,7 +14,7 @@ import CartDrawer from '../components/cart/CartDrawer.jsx';
 import CartConfirmModal from '../components/cart/CartConfirmModal.jsx';
 import { formatPrice } from '../utils/price.js';
 import { useCart } from '../context/CartContext.jsx';
-
+import { calcLine } from '../utils/cartTotals.js';
 export default function Home() {
   const {
     categories,
@@ -90,7 +90,7 @@ export default function Home() {
         item.basePrice ?? 0
        )}${formattedExtras}`;
     });
-     const subtotal = formatPrice(orderItems.reduce((sum, i) => sum + i.lineTotal, 0));
+    const subtotal = formatPrice(orderItems.reduce((sum, i) => sum + calcLine(i), 0));
     let message = `*Pedido Zona B*\n${lines.join('\n')}\nSubtotal ${subtotal}`;
     if (note && note.trim() !== '') {
       message += `\n📓 Nota: ${note.trim()}`;

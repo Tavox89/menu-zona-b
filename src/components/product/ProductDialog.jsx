@@ -107,7 +107,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
       });
     });
     const extrasTotal = parsedExtras.reduce((sum, e) => sum + e.price, 0);
-    const basePrice = Number(product.price) || 0;
+     const basePrice = Number(product.price_usd ?? product.price) || 0;
     const lineTotal = qty * (basePrice + extrasTotal);
     const extrasSignature = parsedExtras.map((e) => e.id).join('|');
     const noteSignature = note ? note.trim().replace(/\s+/g, '_') : '';

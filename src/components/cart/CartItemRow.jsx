@@ -8,9 +8,10 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';
 import { formatPrice, formatBs } from '../../utils/price.js';
-
+import { calcLine } from '../../utils/cartTotals.js';
 export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }) {
   const rate = useUsdToBsRate();
+    const lineUsd = calcLine(item);
   return (
     <ListItem
       sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', py: 1 }}
@@ -57,7 +58,7 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
           </Typography>
         )}
         <Typography variant="body2" sx={{ mt: 0.5 }}>
-          {formatPrice(item.lineTotal)} ({formatBs(item.lineTotal, rate)})
+         {formatPrice(lineUsd)} ({formatBs(lineUsd, rate)})
         </Typography>
       </Box>
       <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 1 }}>

@@ -5,7 +5,7 @@ import { glassGray } from '../../theme/index.js';
 import { useCart } from '../../context/CartContext.jsx';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';
 import { formatPrice, formatBs } from '../../utils/price.js';
-
+import { calcLine } from '../../utils/cartTotals.js';
 /**
  * Fixed footer that displays a summary of the cart and acts as a handle
  * to open the full cart drawer. It is only rendered when there are
@@ -15,7 +15,8 @@ export const FOOTER_HEIGHT = 56;
 
 
 export default function CartFooter({ onClick }) {
-  const { items, subtotal } = useCart();
+  const { items } = useCart();
+  const subtotal = items.reduce((t, it) => t + calcLine(it), 0);
   const rate = useUsdToBsRate();
   if (items.length === 0) return null;
   return (

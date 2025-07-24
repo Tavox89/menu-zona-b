@@ -10,14 +10,15 @@ import ListItem from '@mui/material/ListItem';
 import TextField from '@mui/material/TextField';
 import { useCart } from '../../context/CartContext.jsx';
 import { formatPrice } from '../../utils/price.js';
-
+import { calcLine } from '../../utils/cartTotals.js';
 /**
  * Optional confirmation modal presented before sending the order to
  * WhatsApp. Users can review their items and add global notes. When
  * they confirm, the onSubmit callback is called with the note text.
  */
 export default function CartConfirmModal({ open, onClose, onSubmit }) {
-  const { items, subtotal } = useCart();
+   const { items } = useCart();
+  const subtotal = items.reduce((t, it) => t + calcLine(it), 0);
   const [note, setNote] = useState('');
   const handleConfirm = () => {
     onSubmit?.(note);
@@ -39,7 +40,7 @@ export default function CartConfirmModal({ open, onClose, onSubmit }) {
                   </Typography>
                 ))}
               </div>
-              <Typography variant="body2">{formatPrice(item.lineTotal)}</Typography>
+              <Typography variant="body2">{formatPrice(calcLine(item))}</Typography>
             </ListItem>
           ))}
         </List>
