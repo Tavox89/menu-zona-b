@@ -11,6 +11,9 @@ import { formatPrice, formatBs } from '../../utils/price.js';
  * to open the full cart drawer. It is only rendered when there are
  * items in the cart.
  */
+export const FOOTER_HEIGHT = 56;
+
+
 export default function CartFooter({ onClick }) {
   const { items, subtotal } = useCart();
   const rate = useUsdToBsRate();
@@ -23,7 +26,7 @@ export default function CartFooter({ onClick }) {
         bottom: 0,
         left: 0,
         right: 0,
-        height: 60,
+           height: FOOTER_HEIGHT,
         bgcolor: glassGray,
         backdropFilter: 'blur(10px)',
         px: 2,
@@ -38,9 +41,12 @@ export default function CartFooter({ onClick }) {
         <ShoppingBagIcon />
         <Typography variant="subtitle1">Ver Pedido</Typography>
       </Box>
-      <Typography variant="subtitle1">
-        {formatPrice(subtotal)} | {formatBs(subtotal, rate)}
-      </Typography>
+           <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Typography fontWeight={600}>{formatPrice(subtotal)}</Typography>
+        <Typography sx={{ ml: 0.5, color: 'primary.main' }}>
+          ({formatBs(subtotal, rate)})
+        </Typography>
+      </Box>
     </Box>
   );
 }

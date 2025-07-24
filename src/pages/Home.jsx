@@ -1,8 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Fab from '@mui/material/Fab';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import ScrollTopFab from '../components/layout/ScrollTopFab.jsx';
 
 import useMenuData from '../hooks/useMenuData.js';
 import Header from '../components/layout/Header.jsx';
@@ -171,20 +170,7 @@ export default function Home() {
         />
 
         {/* Floating scroll to top button */}
-        <Fab
-          color="primary"
-          size="small"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          sx={{
-            position: 'fixed',
-            bottom: { xs: 80, sm: 88 },
-            right: 16,
-            zIndex: (theme) => theme.zIndex.tooltip,
-            display: showScrollTop ? 'flex' : 'none',
-          }}
-        >
-          <KeyboardArrowUpIcon />
-        </Fab>
+        <ScrollTopFab show={showScrollTop} drawerOpen={drawerOpen} />
             </Box>
     </>
   );

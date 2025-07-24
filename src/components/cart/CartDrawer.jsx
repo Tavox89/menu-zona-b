@@ -1,29 +1,25 @@
-import Drawer from '@mui/material/Drawer';
+import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
+
 import CloseIcon from '@mui/icons-material/Close';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { useCart } from '../../context/CartContext.jsx';
-import { useUsdToBsRate } from '../../context/RateContext.jsx';
-import { formatPrice, formatBs } from '../../utils/price.js';
 
+import CartItemRow from './CartItemRow.jsx';
+import { FOOTER_HEIGHT } from './CartFooter.jsx';
 /**
  * Bottom drawer displaying the cart contents. Each line item can be
- * incremented, decremented or removed. At the bottom the subtotal and
- * checkout buttons are shown. When the drawer is closed or a button is
- * pressed, the parent component controls the open state.
- */
+ * incremented, decremented or removed. Checkout buttons are shown at
+ * the bottom. The parent component controls the open state.
+*/
 export default function CartDrawer({ open, onClose, onReview, onSend }) {
-  const { items, update, remove, subtotal } = useCart();
-  const rate = useUsdToBsRate();
+   const { items, update, remove } = useCart();
   const handleDecrement = (id, qty) => {
     if (qty <= 1) return;
     update(id, { qty: qty - 1 });
@@ -32,7 +28,19 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
     update(id, { qty: qty + 1 });
   };
   return (
-    <Drawer anchor="bottom" open={open} onClose={onClose} sx={{ zIndex: (theme) => theme.zIndex.appBar + 2 }}>
+      <SwipeableDrawer
+      anchor="bottom"
+      open={open}
+      onClose={onClose}
+      onOpen={() => {}}
+      sx={{ zIndex: (theme) => theme.zIndex.appBar + 2 }}
+      PaperProps={{
+        sx: {
+          height: `calc(100% - ${FOOTER_HEIGHT}px)`,
+          bottom: FOOTER_HEIGHT,
+        },
+      }}
+    >
       <Box sx={{ p: 2, pb: 4, width: '100vw' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography variant="h6">Tu pedido</Typography>
@@ -48,80 +56,16 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
           <>
             <List>
               {items.map((item) => (
-                <ListItem
+               <CartItemRow
                   key={item.id}
-                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', py: 1 }}
-                >
-                  {/* Thumbnail */}
-                  <Box
-                    sx={{
-                      width: 56,
-                      height: 56,
-                      flexShrink: 0,
-                      borderRadius: 1,
-                      overflow: 'hidden',
-                      mr: 1,
-                    }}
-                  >
-                    <img
-                      src={item.image || '/placeholder.png'}
-                      alt={item.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      loading="lazy"
-                    />
-                  </Box>
-                  {/* Details */}
-                  <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {item.name}
-                    </Typography>
-                    {item.extras?.map((e) => (
-                      <Typography key={e.id} variant="caption" sx={{ display: 'block' }}>
-                        • {e.label} (+{formatPrice(e.price)})
-                      </Typography>
-                    ))}
-                    {item.note && item.note.trim() !== '' && (
-                      <Typography variant="caption" sx={{ display: 'block' }}>
-                        • {item.note}
-                      </Typography>
-                    )}
-                    <Typography variant="body2" sx={{ mt: 0.5 }}>
-                      {formatPrice(item.lineTotal)} ({formatBs(item.lineTotal, rate)})
-                    </Typography>
-                  </Box>
-                  {/* Quantity controls */}
-                  <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 1 }}>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleDecrement(item.id, item.qty)}
-                      disabled={item.qty <= 1}
-                    >
-                      <RemoveIcon fontSize="small" />
-                    </IconButton>
-                    <Typography variant="body2" sx={{ width: 20, textAlign: 'center' }}>
-                      {item.qty}
-                    </Typography>
-                    <IconButton size="small" onClick={() => handleIncrement(item.id, item.qty)}>
-                      <AddIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => remove(item.id)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Stack>
-                </ListItem>
+    item={item}
+                  onIncrement={handleIncrement}
+                  onDecrement={handleDecrement}
+                  onRemove={remove}
+                />
               ))}
             </List>
-            <Typography variant="subtitle1" sx={{ mt: 2 }}>
-              Total {formatPrice(subtotal)} ({formatBs(subtotal, rate)})
-            </Typography>
-            <Stack spacing={1} sx={{ mt: 2 }}>
+               <Stack spacing={1} sx={{ p: 2 }}>
               <Button variant="contained" color="primary" onClick={onReview} fullWidth>
                 Procesar pago
               </Button>
@@ -138,6 +82,6 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
           </>
         )}
       </Box>
-    </Drawer>
+   </SwipeableDrawer>
   );
 }
