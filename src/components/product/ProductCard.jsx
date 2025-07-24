@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import IconButton from '@mui/material/IconButton';
-import Chip from '@mui/material/Chip';
+
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { alpha } from '@mui/material/styles';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';
@@ -15,6 +15,31 @@ import { formatPrice, formatBs } from '../../utils/price.js';
 import noImg from '/noImagen.png';
 
 const RADIUS = 4;
+const StockBadge = () => (
+  <Box
+    sx={{
+      position: 'absolute',
+      bottom: 8,
+      right: 8,
+      px: 1.25,
+      height: 28,
+      display: 'flex',
+      alignItems: 'center',
+      borderRadius: 1.5,
+      bgcolor: (t) => alpha(t.palette.error.main, 0.15),
+      border: '1px solid',
+      borderColor: 'error.main',
+      color: '#ffebee',
+      fontSize: 11,
+      fontWeight: 700,
+      textTransform: 'uppercase',
+      letterSpacing: '.5px',
+      pointerEvents: 'none',
+    }}
+  >
+    No disponible
+  </Box>
+);
 
 /**
  * Individual product card. When loading is true a skeleton placeholder is
@@ -129,19 +154,7 @@ function ProductCard({ product, loading = false, onOpen }) {
         </Box>
       </CardContent>
       {outOfStock ? (
-        <Chip
-          label="No disponible"
-          color="error"
-          size="small"
-          sx={{
-            position: 'absolute',
-            bottom: 8,
-            right: 8,
-            fontSize: 13,
-            fontWeight: 600,
-            textTransform: 'uppercase',
-          }}
-        />
+         <StockBadge />
       ) : (
         <IconButton
           aria-label="Agregar producto"

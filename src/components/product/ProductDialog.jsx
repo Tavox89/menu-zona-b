@@ -198,19 +198,27 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
             ))}
           </Box>
         ))}
-       <Stack direction="row" alignItems="center" spacing={1}>
-          <Button variant="outlined" onClick={() => handleQtyChange(-1)} disabled={qty === 1}>
-            –
-          </Button>
-          <TextField
-            value={qty}
-            size="small"
-            inputProps={{ readOnly: true, style: { textAlign: 'center', width: 40, fontSize: '1.25rem' } }}
-          />
-          <Button variant="outlined" onClick={() => handleQtyChange(1)}>
-            +
-          </Button>
-        </Stack>
+         {outOfStock ? (
+          <Typography
+            sx={{ textAlign: 'center', width: '100%', py: 1, color: 'text.disabled', fontWeight: 600 }}
+          >
+            Sin existencias
+          </Typography>
+        ) : (
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Button variant="outlined" onClick={() => handleQtyChange(-1)} disabled={qty === 1}>
+              –
+            </Button>
+            <TextField
+              value={qty}
+              size="small"
+              inputProps={{ readOnly: true, style: { textAlign: 'center', width: 40, fontSize: '1.25rem' } }}
+            />
+            <Button variant="outlined" onClick={() => handleQtyChange(1)}>
+              +
+            </Button>
+          </Stack>
+        )}
         <TextField
           label="Nota para cocina (opcional)"
           multiline
@@ -231,6 +239,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
           color="primary"
           startIcon={<FastfoodIcon />}
           disabled={outOfStock}
+             style={{ visibility: outOfStock ? 'hidden' : 'visible' }}
         >
           Agregar al pedido
         </Button>
