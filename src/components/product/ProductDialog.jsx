@@ -99,7 +99,7 @@ export default function ProductDialog({ open, product, onClose, onAdd }) {
     const parsedExtras = [];
     extras.forEach((grp, gi) => {
       const sel = selectedExtras[gi];
-      if (!sel) return;
+     if (sel == null) return;
       const selIdx = Array.isArray(sel) ? sel : [sel];
       selIdx.forEach((oi) => {
         const opt = grp.options[oi];

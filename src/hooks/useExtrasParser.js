@@ -17,7 +17,7 @@ export function useExtrasParser(product, selected) {
     const parsed = [];
     for (const g of groups) {
       const sel = selected?.[g.groupId];
-      if (!sel) continue;
+      if (sel == null) continue;
       const selIds = Array.isArray(sel) ? sel : [sel];
       selIds.forEach((id) => {
         const opt = g.options.find((o) => o.id === id);
