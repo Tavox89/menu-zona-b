@@ -31,8 +31,8 @@ import { FOOTER_HEIGHT } from './CartFooter.jsx';
  * dismiss the drawer. A small border radius has been added to the
  * top corners for a softer edge.
  */
-export default function CartDrawer({ open, onClose, onReview, onSend }) {
-  const { items, update, remove } = useCart();
+export default function CartDrawer({ open, onClose }) {
+  const { items, update, remove, clear } = useCart();
   const rate = useUsdToBsRate();
   const totalUsd = items.reduce((t, it) => t + calcLine(it), 0);
   const waLink = useWhatsAppLink(items);
@@ -40,8 +40,20 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
     if (qty <= 1) return;
     update(id, { qty: qty - 1 });
   };
-  const handleIncrement = (id, qty) => {
-    update(id, { qty: qty + 1 });
+const handleIncrement = (id, qty) => {
+  update(id, { qty: qty + 1 });
+};
+
+  const handleSendWhatsApp = () => {
+    window.open(waLink, '_blank', 'noopener,noreferrer');
+    clear();
+    onClose?.();
+  };
+
+  const handleCheckout = () => {
+    // futuro flujo de pago
+    clear();
+    onClose?.();
   };
 
   // Constant controlling how tall the drawer should be relative to the viewport
@@ -119,11 +131,11 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={onReview}
+               onClick={handleCheckout}
                 fullWidth
                 startIcon={<CreditCardIcon />}
                 sx={{ color: '#fff' }}
-                  disabled
+                disabled={items.length === 0}
                 title="Próximamente"
               >
                 Procesar pago
@@ -131,18 +143,16 @@ export default function CartDrawer({ open, onClose, onReview, onSend }) {
               {/* WhatsApp button with persistent white text */}
               <Button
                 variant="contained"
-                        component="a"
-                href={waLink}
-                target="_blank"
-                startIcon={<WhatsAppIcon />}
-                onClick={onSend}
+                      onClick={handleSendWhatsApp}
                 fullWidth
+                    startIcon={<WhatsAppIcon />}
                 sx={{
                   mt: 1,
                   bgcolor: '#25D366',
                   color: '#fff',
                   '&:hover': { bgcolor: '#1ebe53' },
                 }}
+                   disabled={items.length === 0}
               >
                 Pedido por WhatsApp
               </Button>

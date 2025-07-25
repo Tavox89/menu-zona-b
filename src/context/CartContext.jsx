@@ -86,9 +86,9 @@ export const CartProvider = ({ children }) => {
      () => items.reduce((sum, item) => sum + calcLine(item), 0),
     [items]
   );
-
+  const value = { items, add, update, remove, clear, subtotal };
   return (
-    <CartContext.Provider value={{ items, add, update, remove, clear, subtotal }}>
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );
