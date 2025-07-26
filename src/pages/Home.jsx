@@ -121,8 +121,13 @@ export default function Home() {
           // push grupo anterior
           if (group.length) {
             sections.push(
-              <Grid item xs={12} key={`group-${currentCat}`}>
-             <Grid container spacing={2} justifyContent="center">
+                <Grid
+                item
+                xs={12}
+                key={`group-${currentCat}`}
+                sx={{ flexBasis:'100%', maxWidth:'100%', flexShrink:0 }}
+              >
+                <Grid container spacing={2} justifyContent="center">
                   {group}
                 </Grid>
               </Grid>
@@ -132,7 +137,12 @@ export default function Home() {
           // nuevo header
           const title = categories.find((c) => +c.id === catId)?.name || '';
           sections.push(
-            <Grid item xs={12} key={`header-${catId}`}>
+               <Grid
+              item
+              xs={12}
+              key={`header-${catId}`}
+              sx={{ flexBasis:'100%', maxWidth:'100%', flexShrink:0 }}
+            >
               <CategoryHeader title={title} />
             </Grid>
           );
@@ -146,8 +156,13 @@ export default function Home() {
         // último grupo
         if (idx === orderedProducts.length - 1) {
           sections.push(
-            <Grid item xs={12} key={`group-${currentCat}`}>
-               <Grid container spacing={2} justifyContent="center">
+                      <Grid
+              item
+              xs={12}
+              key={`group-${currentCat}`}
+              sx={{ flexBasis:'100%', maxWidth:'100%', flexShrink:0 }}
+            >
+              <Grid container spacing={2} justifyContent="center">
                 {group}
               </Grid>
             </Grid>
