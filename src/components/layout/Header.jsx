@@ -28,16 +28,18 @@ export default function Header({ query, onQueryChange, categories = [], onSelect
           boxShadow: 'none',
           top: 0,
           zIndex: theme.zIndex.drawer + 1,
+            px: { xs: 1, sm: 3, lg: 4 },
         }}
       >
-        <Toolbar sx={{ minHeight: 56, gap: 2, justifyContent: 'space-between' }}>
+            <Toolbar sx={{ minHeight: 56, gap: 2, justifyContent: 'space-between', alignItems: 'center' }}>
             <Box
             component="img"
             src="/zonab.png"
             alt="Menú Zona B"
             sx={{
-              width: { xs: 40, sm: 56, md: 72 },
-              height: { xs: 40, sm: 56, md: 72 },
+                width: { xs: 40, sm: 56, md: 68, lg: 80 },
+              height: 'auto',
+              mr: { xs: 1.5, sm: 2 },
             }}
           />
           <Typography variant="h6" color="primary.main" sx={{ flexGrow: 1, textAlign: 'center', fontWeight: 600 }}>
