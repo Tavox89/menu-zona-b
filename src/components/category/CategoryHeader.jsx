@@ -12,22 +12,55 @@ export default function CategoryHeader({ title }) {
   return (
     <Box
       sx={{
+            position: 'relative',
         width: '100%',
-             flexBasis: { xs: 'auto', sm: '100%' },
+           display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexBasis: { xs: 'auto', sm: '100%' },
         gridColumn: { sm: '1 / -1' },
-        px: 2,
-        py: 1,
-        bgcolor: 'transparent',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-           textAlign: 'center',
-        textTransform: 'uppercase',
+       py: { xs: 1, sm: 1.5 },
+        my: { xs: 1.5, sm: 3 },
+        background: 'rgba(255,255,255,.04)',
+        backdropFilter: 'blur(4px)',
+        border: '1px solid rgba(212,175,55,.25)',
+        borderRadius: 2,
       }}
     >
-      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }} component="span">
+           <Box
+        sx={{
+          flex: 1,
+          height: 1,
+          background:
+            'linear-gradient(to right, transparent 0%, rgba(212,175,55,.4) 50%, transparent 100%)',
+        }}
+      />
+      <Typography
+        component="span"
+        sx={{
+          px: 2,
+          fontWeight: 700,
+          fontSize: { xs: 16, sm: 22, md: 24 },
+          textTransform: 'uppercase',
+          letterSpacing: { xs: '.8px', sm: '1.2px' },
+          background:
+            'linear-gradient(90deg,#f7e7b7 0%,#d4af37 50%,#b88a00 100%)',
+          WebkitBackgroundClip: 'text',
+          color: 'transparent',
+          textShadow: '0 0 6px rgba(212,175,55,.45)',
+          whiteSpace: 'nowrap',
+        }}
+      >
         {title}
       </Typography>
+            <Box
+        sx={{
+          flex: 1,
+          height: 1,
+          background:
+            'linear-gradient(to right, transparent 0%, rgba(212,175,55,.4) 50%, transparent 100%)',
+        }}
+      />
     </Box>
   );
 }
