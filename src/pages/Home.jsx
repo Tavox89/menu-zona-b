@@ -122,7 +122,9 @@ export default function Home() {
           if (group.length) {
             sections.push(
               <Grid item xs={12} key={`group-${currentCat}`}>
-                <Grid container spacing={2}>{group}</Grid>
+             <Grid container spacing={2} justifyContent="center">
+                  {group}
+                </Grid>
               </Grid>
             );
             group = [];
@@ -145,7 +147,9 @@ export default function Home() {
         if (idx === orderedProducts.length - 1) {
           sections.push(
             <Grid item xs={12} key={`group-${currentCat}`}>
-              <Grid container spacing={2}>{group}</Grid>
+               <Grid container spacing={2} justifyContent="center">
+                {group}
+              </Grid>
             </Grid>
           );
         }
