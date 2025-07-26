@@ -33,7 +33,10 @@ export default function Header({ query, onQueryChange, categories = [], onSelect
       >
             <Toolbar
           sx={{
-            minHeight: { xs: 56, sm: 72, md: 80 },
+             /* más alto para dar aire arriba y centrar */
+            minHeight: { xs: 64, sm: 88, md: 96 },
+            /* padding vertical extra sólo en sm+ */
+            py: { xs: 0, sm: 1 },
             gap: 2,
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -44,7 +47,7 @@ export default function Header({ query, onQueryChange, categories = [], onSelect
             src="/zonab.png"
             alt="Zona B logo"
             sx={{
-                  width: { xs: 48, sm: 64, md: 76, lg: 88 },
+                 width: { xs: 56, sm: 80, md: 96, lg: 104 }, /* + tamaños */
               height: 'auto',
               mr: { xs: 1.5, sm: 2 },
                      display: 'flex',
