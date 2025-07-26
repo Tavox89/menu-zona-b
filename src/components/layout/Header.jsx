@@ -42,9 +42,46 @@ export default function Header({ query, onQueryChange, categories = [], onSelect
               mr: { xs: 1.5, sm: 2 },
             }}
           />
-          <Typography variant="h6" color="primary.main" sx={{ flexGrow: 1, textAlign: 'center', fontWeight: 600 }}>
-            Menú Zona B
-          </Typography>
+                  <Box
+            sx={{
+              flexGrow: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              lineHeight: 1,
+            }}
+          >
+            <Typography
+              component="h1"
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                fontSize: { xs: 20, sm: 24, md: 28 },
+                letterSpacing: '.5px',
+                background:
+                  'linear-gradient(90deg,#f7e7b7 0%,#d4af37 50%,#b88a00 100%)',
+                WebkitBackgroundClip: 'text',
+                color: 'transparent',
+                textShadow: '0 0 6px rgba(212,175,55,.45)',
+                textTransform: 'uppercase',
+              }}
+            >
+              Menú Zona B
+            </Typography>
+            <Typography
+              component="span"
+              sx={{
+                mt: '2px',
+                fontWeight: 500,
+                fontSize: { xs: 10, sm: 12, md: 14 },
+                color: '#d4af37',
+                textShadow: '0 0 3px rgba(212,175,55,.35)',
+                letterSpacing: '.4px',
+              }}
+            >
+              Resto Bar
+            </Typography>
+          </Box>
           {isMobile && (
             <IconButton
               color="inherit"
