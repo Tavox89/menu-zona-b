@@ -6,18 +6,36 @@ import Stack from '@mui/material/Stack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import TableRestaurantOutlinedIcon from '@mui/icons-material/TableRestaurantOutlined';
+import TakeoutDiningRoundedIcon from '@mui/icons-material/TakeoutDiningRounded';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import { useTheme } from '@mui/material/styles';
 import { useUsdToBsRate } from '../../context/RateContext.jsx';
-import { formatPrice, formatBs } from '../../utils/price.js';
+import { formatBs, formatPrice } from '../../utils/price.js';
+import {
+  getEffectiveItemFulfillmentMode,
+  getFulfillmentModeChipColor,
+  getFulfillmentModeLabel,
+} from '../../utils/fulfillment.js';
 
 /**
  * Render a single line in the cart with quantity controls, product image,
  * extras, notes and per‑line pricing. When the product lacks an image we
  * fall back to the global noImagen.png placeholder to avoid broken
- * thumbnails. The line price displays both USD and BS values using
+ * thumbnails. The line price displays both USD and bolivar values using
  * the same helpers as the product card and modal.
  */
-export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }) {
+export default function CartItemRow({
+  item,
+  onIncrement,
+  onDecrement,
+  onRemove,
+  onSetFulfillmentMode,
+}) {
+  const theme = useTheme();
   const rate = useUsdToBsRate();
+  const fulfillmentMode = getEffectiveItemFulfillmentMode(item);
   // Compute totals. We explicitly parse each extra price to avoid missing
   // additional charges when prices are formatted strings (e.g. "$1.00").
   const extrasTotal = (item.extras ?? []).reduce((sum, e) => {
@@ -42,7 +60,20 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
   const showLineTotal = (item.qty ?? 0) > 1;
   return (
     <ListItem
-      sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', py: 1 }}
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        flexWrap: { xs: 'wrap', sm: 'nowrap' },
+        gap: 1,
+        px: 0,
+        py: 1.1,
+        borderRadius: 3,
+        background: theme.palette.mode === 'light' ? 'rgba(24,40,60,0.03)' : 'rgba(255,255,255,0.025)',
+        border: `1px solid ${theme.appBrand.softBorderColor}`,
+        mb: 1,
+        overflow: 'hidden',
+      }}
     >
       {/* Image column */}
       <Box
@@ -63,17 +94,44 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
         />
       </Box>
       {/* Main details: name, extras, notes and unit price */}
-      <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+      <Box sx={{ flex: '1 1 180px', minWidth: 0, overflow: 'hidden' }}>
         <Typography
           variant="subtitle2"
           sx={{
             overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
           }}
         >
           {item.name}
         </Typography>
+        <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={{ mt: 0.5 }}>
+          <Chip
+            size="small"
+            color={getFulfillmentModeChipColor(fulfillmentMode)}
+            variant="outlined"
+            icon={
+              fulfillmentMode === 'takeaway' ? <TakeoutDiningRoundedIcon /> : <TableRestaurantOutlinedIcon />
+            }
+            label={getFulfillmentModeLabel(fulfillmentMode)}
+          />
+          {typeof onSetFulfillmentMode === 'function' ? (
+            <Button
+              size="small"
+              variant="text"
+              onClick={() =>
+                onSetFulfillmentMode(
+                  item.id,
+                  fulfillmentMode === 'takeaway' ? 'dine_in' : 'takeaway'
+                )
+              }
+              sx={{ minHeight: 24, px: 0.8 }}
+            >
+              {fulfillmentMode === 'takeaway' ? 'Pasar a mesa' : 'Pasar a llevar'}
+            </Button>
+          ) : null}
+        </Stack>
         {item.extras?.length > 0 && (
           <Typography variant="caption" sx={{ display: 'block', ml: 1.5 }}>
             • {item.extras.map((e) => e.label).join(', ')}
@@ -87,14 +145,31 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
             “{item.note}”
           </Typography>
         )}
-        {/* Unit price in USD/BS displayed under the description */}
+        {/* Unit price in USD/Bs displayed under the description */}
         <Typography variant="body2" sx={{ mt: 0.5 }}>
           {formatPrice(unitUsd)} ({formatBs(unitUsd, rate)})
         </Typography>
       </Box>
       {/* Controls and line total */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', ml: 1 }}>
-        <Stack direction="row" spacing={0.5} alignItems="center">
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: { xs: 'stretch', sm: 'flex-end' },
+          width: { xs: '100%', sm: 'auto' },
+          ml: { sm: 1 },
+          pl: { xs: 0, sm: 0 },
+        }}
+      >
+        <Stack
+          direction="row"
+          spacing={0.5}
+          alignItems="center"
+          sx={{
+            flexWrap: 'wrap',
+            justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+          }}
+        >
           <IconButton
             size="small"
             onClick={() => onDecrement(item.id, item.qty)}
@@ -117,7 +192,7 @@ export default function CartItemRow({ item, onIncrement, onDecrement, onRemove }
             minimise the vertical space taken so the text stays on one
             line even with longer numbers. */}
         {showLineTotal && (
-          <Typography variant="caption" sx={{ mt: 0.25 }}>
+          <Typography variant="caption" sx={{ mt: 0.5, textAlign: { xs: 'left', sm: 'right' } }}>
             {formatPrice(lineUsd)} ({formatBs(lineUsd, rate)})
           </Typography>
         )}

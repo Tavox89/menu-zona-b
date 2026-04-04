@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { alpha, useTheme } from '@mui/material/styles';
 
 /**
  * Displays a category name separating groups of products. In the original
@@ -9,6 +10,9 @@ import Typography from '@mui/material/Typography';
  * bolded to visually distinguish it from product names.
  */
 export default function CategoryHeader({ title }) {
+  const theme = useTheme();
+  const isLight = theme.palette.mode === 'light';
+
   return (
     <Box
       sx={{
@@ -21,9 +25,9 @@ export default function CategoryHeader({ title }) {
         gridColumn: { sm: '1 / -1' },
        py: { xs: 1, sm: 1.5 },
         my: { xs: 1.5, sm: 3 },
-        background: 'rgba(255,255,255,.04)',
+        background: theme.appBrand.frostedPanel,
         backdropFilter: 'blur(4px)',
-        border: '1px solid rgba(212,175,55,.25)',
+        border: `1px solid ${alpha(theme.palette.primary.main, isLight ? 0.22 : 0.25)}`,
         borderRadius: 2,
       }}
     >
@@ -32,7 +36,7 @@ export default function CategoryHeader({ title }) {
           flex: 1,
           height: 1,
           background:
-            'linear-gradient(to right, transparent 0%, rgba(212,175,55,.4) 50%, transparent 100%)',
+            `linear-gradient(to right, transparent 0%, ${alpha(theme.palette.primary.main, isLight ? 0.26 : 0.4)} 50%, transparent 100%)`,
         }}
       />
       <Typography
@@ -43,11 +47,12 @@ export default function CategoryHeader({ title }) {
           fontSize: { xs: 16, sm: 22, md: 24 },
           textTransform: 'uppercase',
           letterSpacing: { xs: '.8px', sm: '1.2px' },
-          background:
-            'linear-gradient(90deg,#f7e7b7 0%,#d4af37 50%,#b88a00 100%)',
+          background: theme.appBrand.titleGradient,
           WebkitBackgroundClip: 'text',
           color: 'transparent',
-          textShadow: '0 0 6px rgba(212,175,55,.45)',
+          textShadow: isLight
+            ? `0 0 8px ${alpha(theme.palette.primary.main, 0.14)}`
+            : '0 0 6px rgba(212,175,55,.45)',
           whiteSpace: 'nowrap',
         }}
       >
@@ -58,7 +63,7 @@ export default function CategoryHeader({ title }) {
           flex: 1,
           height: 1,
           background:
-            'linear-gradient(to right, transparent 0%, rgba(212,175,55,.4) 50%, transparent 100%)',
+            `linear-gradient(to right, transparent 0%, ${alpha(theme.palette.primary.main, isLight ? 0.26 : 0.4)} 50%, transparent 100%)`,
         }}
       />
     </Box>

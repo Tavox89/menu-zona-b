@@ -1,28 +1,51 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getUsdToBsRate } from '../services/rate.js';
-// Context that holds the USD→Bs conversion rate. Defaults to 1 if not yet
+import { getCachedUsdToBsRate, getUsdToBsRate, isValidUsdToBsRate } from '../services/rate.js';
+// Context that holds the USD→Bs conversion rate. Defaults to null if not yet
 // loaded. Components can consume this context via the useUsdToBsRate hook.
-const RateContext = createContext(1);
+const RateContext = createContext(null);
+const SUCCESS_REFRESH_MS = 30 * 60 * 1000;
+const RETRY_DELAY_MS = 10 * 1000;
 
 /**
  * Provider component that fetches the USD→Bs rate from the remote API and
- * exposes it to children. The rate is fetched once on mount. If the API
- * call fails, the default rate of 1 is kept so prices still render.
+ * exposes it to children. The rate is refreshed periodically. If the API
+ * call fails, the provider retries and keeps the last valid known value.
  */
 export function RateProvider({ children }) {
-  const [rate, setRate] = useState(1);
+  const [rate, setRate] = useState(() => getCachedUsdToBsRate());
   useEffect(() => {
+    let active = true;
+    let timerId = null;
+
     async function loadRate() {
-  const value = await getUsdToBsRate();
-      setRate(value);
+      const value = await getUsdToBsRate();
+      if (!active) {
+        return;
+      }
+
+      if (isValidUsdToBsRate(value)) {
+        setRate(value);
+        timerId = window.setTimeout(loadRate, SUCCESS_REFRESH_MS);
+        return;
+      }
+
+      timerId = window.setTimeout(loadRate, RETRY_DELAY_MS);
     }
+
     loadRate();
+
+    return () => {
+      active = false;
+      if (timerId !== null) {
+        window.clearTimeout(timerId);
+      }
+    };
   }, []);
   return <RateContext.Provider value={rate}>{children}</RateContext.Provider>;
 }
 
 /**
- * Consume the USD→Bs conversion rate. Returns 1 until the RateProvider
+ * Consume the USD→Bs conversion rate. Returns null until the RateProvider
  * fetches the actual value.
  */
 // eslint-disable-next-line react-refresh/only-export-components
