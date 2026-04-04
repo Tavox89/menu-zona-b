@@ -50,6 +50,9 @@ cp -R "${DIST_DIR}/." "${TMP_STAGE_DIR}/"
 if [[ -f "${PUBLIC_DIR}/.htaccess" ]]; then
   cp "${PUBLIC_DIR}/.htaccess" "${TMP_STAGE_DIR}/.htaccess"
 fi
+if command -v xattr >/dev/null 2>&1; then
+  xattr -cr "${TMP_STAGE_DIR}" || true
+fi
 COPYFILE_DISABLE=1 tar \
   --exclude='.DS_Store' \
   --exclude='._*' \
@@ -72,6 +75,7 @@ tar -czf "\${REMOTE_BACKUP_DIR}/predeploy-preview-root.tgz" -C "\${REMOTE_DOCROO
 rm -rf "\${REMOTE_DOCROOT}/assets" "\${REMOTE_DOCROOT}/pwa"
 rm -f \\
   "\${REMOTE_DOCROOT}/index.html" \\
+  "\${REMOTE_DOCROOT}/manifest.json" \\
   "\${REMOTE_DOCROOT}/manifest.webmanifest" \\
   "\${REMOTE_DOCROOT}/sw.js" \\
   "\${REMOTE_DOCROOT}/.htaccess" \\
@@ -83,7 +87,7 @@ rm -f \\
   "\${REMOTE_DOCROOT}/logoisola.png" \\
   "\${REMOTE_DOCROOT}/noImagen.png"
 
-tar -xzf "\${REMOTE_UPLOAD_TGZ}" -C "\${REMOTE_DOCROOT}"
+tar --no-same-owner --no-same-permissions --no-overwrite-dir -xzf "\${REMOTE_UPLOAD_TGZ}" -C "\${REMOTE_DOCROOT}"
 rm -f "\${REMOTE_UPLOAD_TGZ}"
 
 for tree in "\${REMOTE_DOCROOT}/assets" "\${REMOTE_DOCROOT}/pwa"; do
@@ -105,6 +109,7 @@ done
 
 for file in \\
   "\${REMOTE_DOCROOT}/index.html" \\
+  "\${REMOTE_DOCROOT}/manifest.json" \\
   "\${REMOTE_DOCROOT}/manifest.webmanifest" \\
   "\${REMOTE_DOCROOT}/sw.js" \\
   "\${REMOTE_DOCROOT}/.htaccess" \\
@@ -180,6 +185,20 @@ fi
 if ! grep -qi 'content-type: image/png' <<<"${MAIN_PWA_HEADERS}"; then
   echo "El icono PWA del dominio principal no respondió como image/png" >&2
   printf '%s\n' "${MAIN_PWA_HEADERS}" >&2
+  exit 1
+fi
+
+echo "Validando manifest en dominio principal..."
+MAIN_MANIFEST_HEADERS="$(curl -fsSI "${REMOTE_MAIN_URL}/manifest.json")"
+if ! grep -qE '^HTTP/.* 200' <<<"${MAIN_MANIFEST_HEADERS}"; then
+  echo "El manifest del dominio principal no respondió HTTP 200" >&2
+  printf '%s\n' "${MAIN_MANIFEST_HEADERS}" >&2
+  exit 1
+fi
+
+if ! grep -qi 'content-type: .*json' <<<"${MAIN_MANIFEST_HEADERS}"; then
+  echo "El manifest del dominio principal no respondió con MIME JSON" >&2
+  printf '%s\n' "${MAIN_MANIFEST_HEADERS}" >&2
   exit 1
 fi
 
