@@ -70,7 +70,7 @@ REMOTE_BACKUP_DIR='${REMOTE_BACKUP_DIR}'
 TIMESTAMP='${TIMESTAMP}'
 
 mkdir -p "\${REMOTE_BACKUP_DIR}"
-tar -czf "\${REMOTE_BACKUP_DIR}/predeploy-preview-root.tgz" -C "\${REMOTE_DOCROOT}" .
+tar --exclude='./.zonab-ops' -czf "\${REMOTE_BACKUP_DIR}/predeploy-preview-root.tgz" -C "\${REMOTE_DOCROOT}" .
 
 rm -rf "\${REMOTE_DOCROOT}/assets" "\${REMOTE_DOCROOT}/pwa"
 rm -f \\

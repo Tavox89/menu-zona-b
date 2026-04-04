@@ -7,6 +7,10 @@ const TEAM_PUSH_ICON = '/apple-touch-icon.png';
 const OPERATIONAL_PUSH_TYPES = ['new_request', 'table_message_new', 'service_partial_ready', 'service_ready'];
 const RECENT_TEAM_PUSH_DELIVERIES = new Map();
 const TEAM_PUSH_DEDUPE_WINDOW_MS = 90000;
+const LEGACY_PUBLIC_TABLE_ENDPOINTS = ['/tavox/v1/table/context', '/tavox/v1/table/messages'];
+const PUBLIC_TABLE_TERMINAL_STATUSES = new Set([401, 403, 410]);
+const RECENT_TERMINAL_PUBLIC_TABLES = new Map();
+const TERMINAL_PUBLIC_TABLE_WINDOW_MS = 15 * 60 * 1000;
 const REALTIME_ENDPOINTS = [
   '/wp-json/tavox/v1/table/session',
   '/wp-json/tavox/v1/table/context',
@@ -31,31 +35,211 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-function isRealtimeOperationalRequest(request) {
+function getOperationalRequestDescriptor(request) {
   if (!(request instanceof Request) || request.method !== 'GET') {
-    return false;
+    return null;
   }
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) {
-    return false;
+    return null;
   }
 
-  return REALTIME_ENDPOINTS.some((endpoint) => url.pathname.startsWith(endpoint));
+  if (REALTIME_ENDPOINTS.some((endpoint) => url.pathname.startsWith(endpoint))) {
+    return { type: 'realtime', url };
+  }
+
+  if (url.pathname !== '/index.php') {
+    return null;
+  }
+
+  const restRoute = String(url.searchParams.get('rest_route') || '').trim();
+  if (!LEGACY_PUBLIC_TABLE_ENDPOINTS.includes(restRoute)) {
+    return null;
+  }
+
+  return {
+    type: 'legacy-public-table',
+    url,
+    restRoute,
+    tableToken: String(url.searchParams.get('table_token') || '').trim(),
+  };
 }
 
-self.addEventListener('fetch', (event) => {
-  if (!isRealtimeOperationalRequest(event.request)) {
+function buildNoStoreRequest(request) {
+  return new Request(request, {
+    cache: 'no-store',
+  });
+}
+
+function pruneRecentTerminalPublicTables() {
+  const now = Date.now();
+
+  Array.from(RECENT_TERMINAL_PUBLIC_TABLES.entries()).forEach(([token, entry]) => {
+    if (!token || now - Number(entry?.timestamp || 0) > TERMINAL_PUBLIC_TABLE_WINDOW_MS) {
+      RECENT_TERMINAL_PUBLIC_TABLES.delete(token);
+    }
+  });
+}
+
+function rememberTerminalPublicTable(tableToken, status = 410) {
+  const normalizedToken = String(tableToken || '').trim();
+  if (!normalizedToken) {
     return;
   }
 
-  event.respondWith(
-    fetch(
-      new Request(event.request, {
-        cache: 'no-store',
-      })
-    )
+  pruneRecentTerminalPublicTables();
+  RECENT_TERMINAL_PUBLIC_TABLES.set(normalizedToken, {
+    status: Number(status || 410) || 410,
+    timestamp: Date.now(),
+  });
+}
+
+function getRecentTerminalPublicTable(tableToken) {
+  const normalizedToken = String(tableToken || '').trim();
+  if (!normalizedToken) {
+    return null;
+  }
+
+  pruneRecentTerminalPublicTables();
+  return RECENT_TERMINAL_PUBLIC_TABLES.get(normalizedToken) || null;
+}
+
+function getPublicTableTerminalMessage(status = 410) {
+  if (Number(status) === 410) {
+    return 'Este acceso de mesa ya venció. Escanea de nuevo el código de la mesa.';
+  }
+
+  return 'Este acceso de mesa ya no es válido. Escanea de nuevo el código de la mesa.';
+}
+
+function buildTerminalPublicTableResponse(status = 410) {
+  const normalizedStatus = PUBLIC_TABLE_TERMINAL_STATUSES.has(Number(status)) ? Number(status) : 410;
+  const code = normalizedStatus === 410 ? 'expired_token' : 'invalid_table_access';
+
+  return new Response(
+    JSON.stringify({
+      code,
+      message: getPublicTableTerminalMessage(normalizedStatus),
+      data: {
+        status: normalizedStatus,
+      },
+    }),
+    {
+      status: normalizedStatus,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
+    }
   );
+}
+
+function isPublicMesaClientForToken(client, tableToken) {
+  const normalizedToken = String(tableToken || '').trim();
+  if (!normalizedToken || !client?.url) {
+    return false;
+  }
+
+  try {
+    const url = new URL(client.url);
+    if (url.origin !== self.location.origin) {
+      return false;
+    }
+
+    if (!url.pathname.startsWith('/mesa')) {
+      return false;
+    }
+
+    return String(url.searchParams.get('table_token') || '').trim() === normalizedToken;
+  } catch {
+    return false;
+  }
+}
+
+async function notifyPublicTableTermination({ tableToken = '', status = 410 } = {}) {
+  const normalizedToken = String(tableToken || '').trim();
+  if (!normalizedToken) {
+    return;
+  }
+
+  const clients = await getWindowClients();
+  const matchingClients = clients.filter((client) => isPublicMesaClientForToken(client, normalizedToken));
+
+  for (const client of matchingClients) {
+    client.postMessage({
+      type: 'PUBLIC_TABLE_ACCESS_TERMINATED',
+      payload: {
+        status: Number(status || 410) || 410,
+        tableToken: normalizedToken,
+        message: getPublicTableTerminalMessage(status),
+      },
+    });
+
+    if (typeof client.navigate === 'function') {
+      try {
+        await client.navigate(client.url);
+      } catch {
+        // Ignore navigation failures for already closing or cross-origin clients.
+      }
+    }
+  }
+}
+
+async function handleLegacyPublicTableRequest(descriptor, request) {
+  const recentTerminal = getRecentTerminalPublicTable(descriptor?.tableToken);
+  if (recentTerminal) {
+    return {
+      response: buildTerminalPublicTableResponse(recentTerminal.status),
+      notify: false,
+      status: recentTerminal.status,
+    };
+  }
+
+  const response = await fetch(buildNoStoreRequest(request));
+  const status = Number(response.status || 0);
+
+  if (PUBLIC_TABLE_TERMINAL_STATUSES.has(status) && descriptor?.tableToken) {
+    rememberTerminalPublicTable(descriptor.tableToken, status);
+    return {
+      response,
+      notify: true,
+      status,
+    };
+  }
+
+  return {
+    response,
+    notify: false,
+    status,
+  };
+}
+
+self.addEventListener('fetch', (event) => {
+  const descriptor = getOperationalRequestDescriptor(event.request);
+  if (!descriptor) {
+    return;
+  }
+
+  if (descriptor.type === 'legacy-public-table') {
+    event.respondWith(
+      handleLegacyPublicTableRequest(descriptor, event.request).then(({ response, notify, status }) => {
+        if (notify && descriptor?.tableToken) {
+          event.waitUntil(
+            notifyPublicTableTermination({
+              tableToken: descriptor.tableToken,
+              status,
+            })
+          );
+        }
+
+        return response;
+      })
+    );
+    return;
+  }
+
+  event.respondWith(fetch(buildNoStoreRequest(event.request)));
 });
 
 async function openStateCache() {
