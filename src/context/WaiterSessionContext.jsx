@@ -1,8 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { waiterHeartbeat, waiterLogin, waiterLogout } from '../services/tableService.js';
 import { clearTeamPushSession, syncTeamPushSession } from '../utils/teamPush.js';
 
 const STORAGE_KEY = 'tavox_waiter_session_v1';
+const HEARTBEAT_MIN_GAP_MS = 4000;
 const WaiterSessionContext = createContext(null);
 
 function readStoredSession() {
@@ -56,6 +57,9 @@ export function WaiterSessionProvider({ children }) {
   const [session, setSession] = useState(() => readStoredSession());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const heartbeatRequestRef = useRef(null);
+  const lastHeartbeatAtRef = useRef(0);
+  const lastHeartbeatTokenRef = useRef('');
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -83,32 +87,108 @@ export function WaiterSessionProvider({ children }) {
   }, [session?.session_token]);
 
   useEffect(() => {
+    const nextToken = String(session?.session_token || '').trim();
+    if (lastHeartbeatTokenRef.current === nextToken) {
+      return;
+    }
+
+    heartbeatRequestRef.current = null;
+    lastHeartbeatAtRef.current = 0;
+    lastHeartbeatTokenRef.current = nextToken;
+  }, [session?.session_token]);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+      return undefined;
+    }
+
+    const handleServiceWorkerMessage = (event) => {
+      const payload = event?.data;
+      if (payload?.type !== 'TEAM_SESSION_TERMINATED') {
+        return;
+      }
+
+      heartbeatRequestRef.current = null;
+      lastHeartbeatAtRef.current = 0;
+      lastHeartbeatTokenRef.current = '';
+      clearTeamPushSession().catch(() => {});
+      setError(
+        String(payload?.payload?.message || '').trim() ||
+          'Tu acceso del equipo venció. Vuelve a entrar.'
+      );
+      setSession(null);
+    };
+
+    navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+
+    return () => {
+      navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!session?.session_token) {
       return undefined;
     }
 
     let intervalId = 0;
 
-    const heartbeat = async () => {
+    const runHeartbeat = async ({ force = false } = {}) => {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
-        return;
+        return null;
       }
+
+      if (heartbeatRequestRef.current) {
+        return heartbeatRequestRef.current;
+      }
+
+      const sessionToken = String(session?.session_token || '').trim();
+      if (!sessionToken) {
+        return null;
+      }
+
+      const now = Date.now();
+      if (!force && now - lastHeartbeatAtRef.current < HEARTBEAT_MIN_GAP_MS) {
+        return null;
+      }
+
+      lastHeartbeatAtRef.current = now;
+      lastHeartbeatTokenRef.current = sessionToken;
+
+      let request = null;
+      request = waiterHeartbeat({ sessionToken })
+        .then((snapshot) => {
+          setSession((currentSession) => mergeSessionSnapshot(currentSession, snapshot));
+        })
+        .catch(() => {
+          setError('Tu acceso del equipo venció por inactividad. Vuelve a entrar.');
+          setSession(null);
+        })
+        .finally(() => {
+          if (heartbeatRequestRef.current === request) {
+            heartbeatRequestRef.current = null;
+          }
+        });
+
+      heartbeatRequestRef.current = request;
 
       try {
-        const snapshot = await waiterHeartbeat({ sessionToken: session.session_token });
-        setSession((currentSession) => mergeSessionSnapshot(currentSession, snapshot));
+        await request;
       } catch {
-        setError('Tu acceso del equipo venció por inactividad. Vuelve a entrar.');
-        setSession(null);
+        // Errors already mapped to session reset and UI state.
       }
+
+      return request;
     };
 
-    heartbeat();
-    intervalId = window.setInterval(heartbeat, 30000);
+    runHeartbeat({ force: true }).catch(() => {});
+    intervalId = window.setInterval(() => {
+      runHeartbeat().catch(() => {});
+    }, 30000);
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        heartbeat();
+        runHeartbeat().catch(() => {});
       }
     };
 

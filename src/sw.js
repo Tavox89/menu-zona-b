@@ -11,6 +11,17 @@ const LEGACY_PUBLIC_TABLE_ENDPOINTS = ['/tavox/v1/table/context', '/tavox/v1/tab
 const PUBLIC_TABLE_TERMINAL_STATUSES = new Set([401, 403, 410]);
 const RECENT_TERMINAL_PUBLIC_TABLES = new Map();
 const TERMINAL_PUBLIC_TABLE_WINDOW_MS = 15 * 60 * 1000;
+const LEGACY_TEAM_ENDPOINTS = [
+  '/tavox/v1/waiter/queue',
+  '/tavox/v1/waiter/tables',
+  '/tavox/v1/waiter/production',
+  '/tavox/v1/waiter/notifications',
+  '/tavox/v1/waiter/request-history',
+  '/tavox/v1/waiter/push/inbox',
+];
+const TEAM_SESSION_TERMINAL_STATUSES = new Set([401, 403]);
+const RECENT_TERMINAL_TEAM_SESSIONS = new Map();
+const TERMINAL_TEAM_SESSION_WINDOW_MS = 10 * 60 * 1000;
 const REALTIME_ENDPOINTS = [
   '/wp-json/tavox/v1/table/session',
   '/wp-json/tavox/v1/table/context',
@@ -55,6 +66,14 @@ function getOperationalRequestDescriptor(request) {
 
   const restRoute = String(url.searchParams.get('rest_route') || '').trim();
   if (!LEGACY_PUBLIC_TABLE_ENDPOINTS.includes(restRoute)) {
+    if (LEGACY_TEAM_ENDPOINTS.includes(restRoute)) {
+      return {
+        type: 'legacy-team-session',
+        url,
+        restRoute,
+      };
+    }
+
     return null;
   }
 
@@ -135,6 +154,77 @@ function buildTerminalPublicTableResponse(status = 410) {
   );
 }
 
+function pruneRecentTerminalTeamSessions() {
+  const now = Date.now();
+
+  Array.from(RECENT_TERMINAL_TEAM_SESSIONS.entries()).forEach(([sessionKey, entry]) => {
+    if (!sessionKey || now - Number(entry?.timestamp || 0) > TERMINAL_TEAM_SESSION_WINDOW_MS) {
+      RECENT_TERMINAL_TEAM_SESSIONS.delete(sessionKey);
+    }
+  });
+}
+
+function rememberTerminalTeamSession(sessionKey, status = 401) {
+  const normalizedKey = String(sessionKey || '').trim();
+  if (!normalizedKey) {
+    return;
+  }
+
+  pruneRecentTerminalTeamSessions();
+  RECENT_TERMINAL_TEAM_SESSIONS.set(normalizedKey, {
+    status: Number(status || 401) || 401,
+    timestamp: Date.now(),
+  });
+}
+
+function getRecentTerminalTeamSession(sessionKey) {
+  const normalizedKey = String(sessionKey || '').trim();
+  if (!normalizedKey) {
+    return null;
+  }
+
+  pruneRecentTerminalTeamSessions();
+  return RECENT_TERMINAL_TEAM_SESSIONS.get(normalizedKey) || null;
+}
+
+function clearRecentTerminalTeamSession(sessionKey = '') {
+  const normalizedKey = String(sessionKey || '').trim();
+  if (!normalizedKey) {
+    return;
+  }
+
+  RECENT_TERMINAL_TEAM_SESSIONS.delete(normalizedKey);
+}
+
+function getTeamSessionTerminalMessage(status = 401) {
+  if (Number(status) === 403) {
+    return 'Este acceso del equipo ya no tiene permiso para continuar. Vuelve a entrar.';
+  }
+
+  return 'Tu acceso del equipo venció. Vuelve a entrar.';
+}
+
+function buildTerminalTeamSessionResponse(status = 401) {
+  const normalizedStatus = TEAM_SESSION_TERMINAL_STATUSES.has(Number(status)) ? Number(status) : 401;
+
+  return new Response(
+    JSON.stringify({
+      code: 'invalid_waiter_session',
+      message: getTeamSessionTerminalMessage(normalizedStatus),
+      data: {
+        status: normalizedStatus,
+      },
+    }),
+    {
+      status: normalizedStatus,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
+    }
+  );
+}
+
 function isPublicMesaClientForToken(client, tableToken) {
   const normalizedToken = String(tableToken || '').trim();
   if (!normalizedToken || !client?.url) {
@@ -186,6 +276,48 @@ async function notifyPublicTableTermination({ tableToken = '', status = 410 } = 
   }
 }
 
+async function getLegacyTeamSessionKey() {
+  const state = await readState();
+  return String(state?.sessionToken || '').trim() || 'legacy-team';
+}
+
+function isTeamClient(client) {
+  if (!client?.url) {
+    return false;
+  }
+
+  try {
+    const url = new URL(client.url);
+    return url.origin === self.location.origin && url.pathname.startsWith('/equipo');
+  } catch {
+    return false;
+  }
+}
+
+async function notifyTeamSessionTermination({ status = 401 } = {}) {
+  const clients = await getWindowClients();
+  const teamClients = clients.filter((client) => isTeamClient(client));
+  const loginUrl = new URL('/equipo', self.location.origin).href;
+
+  for (const client of teamClients) {
+    client.postMessage({
+      type: 'TEAM_SESSION_TERMINATED',
+      payload: {
+        status: Number(status || 401) || 401,
+        message: getTeamSessionTerminalMessage(status),
+      },
+    });
+
+    if (typeof client.navigate === 'function') {
+      try {
+        await client.navigate(loginUrl);
+      } catch {
+        // Ignore navigation failures for already closing or cross-origin clients.
+      }
+    }
+  }
+}
+
 async function handleLegacyPublicTableRequest(descriptor, request) {
   const recentTerminal = getRecentTerminalPublicTable(descriptor?.tableToken);
   if (recentTerminal) {
@@ -215,6 +347,38 @@ async function handleLegacyPublicTableRequest(descriptor, request) {
   };
 }
 
+async function handleLegacyTeamSessionRequest(request) {
+  const sessionKey = await getLegacyTeamSessionKey();
+  const recentTerminal = getRecentTerminalTeamSession(sessionKey);
+  if (recentTerminal) {
+    return {
+      response: buildTerminalTeamSessionResponse(recentTerminal.status),
+      notify: false,
+      status: recentTerminal.status,
+    };
+  }
+
+  const response = await fetch(buildNoStoreRequest(request));
+  const status = Number(response.status || 0);
+
+  if (TEAM_SESSION_TERMINAL_STATUSES.has(status)) {
+    rememberTerminalTeamSession(sessionKey, status);
+    return {
+      response,
+      notify: true,
+      status,
+    };
+  }
+
+  clearRecentTerminalTeamSession(sessionKey);
+
+  return {
+    response,
+    notify: false,
+    status,
+  };
+}
+
 self.addEventListener('fetch', (event) => {
   const descriptor = getOperationalRequestDescriptor(event.request);
   if (!descriptor) {
@@ -228,6 +392,23 @@ self.addEventListener('fetch', (event) => {
           event.waitUntil(
             notifyPublicTableTermination({
               tableToken: descriptor.tableToken,
+              status,
+            })
+          );
+        }
+
+        return response;
+      })
+    );
+    return;
+  }
+
+  if (descriptor.type === 'legacy-team-session') {
+    event.respondWith(
+      handleLegacyTeamSessionRequest(event.request).then(({ response, notify, status }) => {
+        if (notify) {
+          event.waitUntil(
+            notifyTeamSessionTermination({
               status,
             })
           );
@@ -292,6 +473,14 @@ async function writeState(nextState) {
   );
 
   return normalized;
+}
+
+function isSameTeamPushState(currentState, nextState) {
+  return (
+    String(currentState?.sessionToken || '').trim() === String(nextState?.sessionToken || '').trim() &&
+    sanitizeScope(currentState?.scope) === sanitizeScope(nextState?.scope) &&
+    String(currentState?.deviceLabel || '').trim() === String(nextState?.deviceLabel || '').trim()
+  );
 }
 
 function sanitizeScope(scope) {
@@ -576,13 +765,19 @@ self.addEventListener('message', (event) => {
   if (data?.type === 'TEAM_PUSH_SET_SESSION') {
     event.waitUntil(
       (async () => {
+        const currentState = await readState();
         const nextState = {
           sessionToken: String(data.sessionToken || ''),
           scope: sanitizeScope(data.scope),
           deviceLabel: String(data.deviceLabel || 'Tablet de Zona B'),
         };
 
+        if (isSameTeamPushState(currentState, nextState)) {
+          return;
+        }
+
         await writeState(nextState);
+        clearRecentTerminalTeamSession(nextState.sessionToken);
 
         await syncSubscription('set-session');
 
@@ -593,24 +788,37 @@ self.addEventListener('message', (event) => {
   }
 
   if (data?.type === 'TEAM_PUSH_CLEAR_SESSION') {
-    event.waitUntil(writeState({ sessionToken: '', scope: 'service', deviceLabel: 'Tablet de Zona B' }));
+    event.waitUntil(
+      (async () => {
+        const currentState = await readState();
+        clearRecentTerminalTeamSession(currentState.sessionToken);
+        await writeState({ sessionToken: '', scope: 'service', deviceLabel: 'Tablet de Zona B' });
+      })()
+    );
     return;
   }
 
   if (data?.type === 'TEAM_PUSH_CONTEXT') {
     event.waitUntil(
-      readState()
-        .then((state) =>
-          writeState({
-            sessionToken: state.sessionToken,
-            scope: sanitizeScope(data.scope),
-            deviceLabel:
-              typeof data.deviceLabel === 'string' && data.deviceLabel.trim() !== ''
-                ? data.deviceLabel
-                : state.deviceLabel,
-          })
-        )
-        .then(() => syncSubscription('context'))
+      (async () => {
+        const state = await readState();
+        const nextState = {
+          sessionToken: state.sessionToken,
+          scope: sanitizeScope(data.scope),
+          deviceLabel:
+            typeof data.deviceLabel === 'string' && data.deviceLabel.trim() !== ''
+              ? data.deviceLabel
+              : state.deviceLabel,
+        };
+
+        if (isSameTeamPushState(state, nextState)) {
+          return;
+        }
+
+        await writeState(nextState);
+        clearRecentTerminalTeamSession(nextState.sessionToken);
+        await syncSubscription('context');
+      })()
     );
     return;
   }
