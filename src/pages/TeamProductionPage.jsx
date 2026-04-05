@@ -15,6 +15,7 @@ import TakeoutDiningRoundedIcon from '@mui/icons-material/TakeoutDiningRounded';
 import WaiterShell from '../components/waiter/WaiterShell.jsx';
 import QuietInfoPanel from '../components/common/QuietInfoPanel.jsx';
 import { useWaiterSession } from '../context/WaiterSessionContext.jsx';
+import useSerializedRefresh from '../hooks/useSerializedRefresh.js';
 import useWaiterLiveStream from '../hooks/useWaiterLiveStream.js';
 import {
   fetchWaiterProductionBoard,
@@ -259,6 +260,7 @@ export default function TeamProductionPage({ station = 'kitchen' }) {
       setLoading(false);
     }
   }, [session?.session_token, station, stationLabel]);
+  const scheduleBoardRefresh = useSerializedRefresh(loadBoard, { minGapMs: 500 });
 
   useEffect(() => {
     loadBoard();
@@ -268,15 +270,17 @@ export default function TeamProductionPage({ station = 'kitchen' }) {
     sessionToken: session?.session_token || '',
     scope: station,
     enabled: Boolean(session?.session_token),
-    onSync: loadBoard,
+    onSync: scheduleBoardRefresh,
   });
 
   useEffect(() => {
-    const intervalId = window.setInterval(loadBoard, 20000);
+    const intervalId = window.setInterval(() => {
+      scheduleBoardRefresh();
+    }, 20000);
     return () => window.clearInterval(intervalId);
-  }, [loadBoard]);
+  }, [scheduleBoardRefresh]);
 
-  useEffect(() => subscribeToTeamPushMessages(() => loadBoard()), [loadBoard]);
+  useEffect(() => subscribeToTeamPushMessages(() => scheduleBoardRefresh()), [scheduleBoardRefresh]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {

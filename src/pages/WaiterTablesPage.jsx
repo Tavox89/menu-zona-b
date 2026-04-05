@@ -32,6 +32,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import WaiterShell from '../components/waiter/WaiterShell.jsx';
 import QuietInfoPanel from '../components/common/QuietInfoPanel.jsx';
 import { useWaiterSession } from '../context/WaiterSessionContext.jsx';
+import useSerializedRefresh from '../hooks/useSerializedRefresh.js';
 import useWaiterLiveStream from '../hooks/useWaiterLiveStream.js';
 import {
   fetchTableMessages,
@@ -637,6 +638,11 @@ export default function WaiterTablesPage() {
       setLoading(false);
     }
   }, [session?.session_token]);
+  const scheduleTablesRefresh = useSerializedRefresh(loadTables, { minGapMs: 500 });
+  const scheduleSelectedTableMessagesRefresh = useSerializedRefresh(
+    () => loadSelectedTableMessages(selectedTableRef.current),
+    { minGapMs: 500 }
+  );
 
   useEffect(() => {
     loadTables();
@@ -669,12 +675,12 @@ export default function WaiterTablesPage() {
   }, [requestedTableToken, tables]);
 
   const handleServiceRealtimeSync = useCallback(() => {
-    loadTables();
+    scheduleTablesRefresh();
 
     if (selectedTableRef.current?.table_token) {
-      loadSelectedTableMessages(selectedTableRef.current);
+      scheduleSelectedTableMessagesRefresh();
     }
-  }, [loadSelectedTableMessages, loadTables]);
+  }, [scheduleSelectedTableMessagesRefresh, scheduleTablesRefresh]);
 
   useWaiterLiveStream({
     sessionToken: session?.session_token || '',
@@ -684,9 +690,11 @@ export default function WaiterTablesPage() {
   });
 
   useEffect(() => {
-    const intervalId = window.setInterval(loadTables, 20000);
+    const intervalId = window.setInterval(() => {
+      scheduleTablesRefresh();
+    }, 20000);
     return () => window.clearInterval(intervalId);
-  }, [loadTables]);
+  }, [scheduleTablesRefresh]);
 
   useEffect(
     () =>
@@ -724,11 +732,11 @@ export default function WaiterTablesPage() {
     }
 
     const intervalId = window.setInterval(() => {
-      loadSelectedTableMessages(selectedTableRef.current);
+      scheduleSelectedTableMessagesRefresh();
     }, 15000);
 
     return () => window.clearInterval(intervalId);
-  }, [loadSelectedTableMessages, selectedTable?.table_token]);
+  }, [scheduleSelectedTableMessagesRefresh, selectedTable?.table_token]);
 
   const filteredTables = useMemo(() => {
     const sorted = [...tables].sort((a, b) => {

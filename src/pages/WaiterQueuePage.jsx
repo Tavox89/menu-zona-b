@@ -13,6 +13,7 @@ import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import WaiterShell from '../components/waiter/WaiterShell.jsx';
 import QuietInfoPanel from '../components/common/QuietInfoPanel.jsx';
 import { useWaiterSession } from '../context/WaiterSessionContext.jsx';
+import useSerializedRefresh from '../hooks/useSerializedRefresh.js';
 import useWaiterLiveStream from '../hooks/useWaiterLiveStream.js';
 import {
   acceptWaiterRequest,
@@ -133,6 +134,7 @@ export default function WaiterQueuePage() {
       setLoading(false);
     }
   }, [session?.session_token]);
+  const scheduleQueueRefresh = useSerializedRefresh(loadQueue, { minGapMs: 500 });
 
   useEffect(() => {
     loadQueue();
@@ -142,19 +144,21 @@ export default function WaiterQueuePage() {
     sessionToken: session?.session_token || '',
     scope: 'queue',
     enabled: Boolean(session?.session_token),
-    onSync: loadQueue,
+    onSync: scheduleQueueRefresh,
   });
 
   useEffect(() => {
-    const intervalId = window.setInterval(loadQueue, 20000);
+    const intervalId = window.setInterval(() => {
+      scheduleQueueRefresh();
+    }, 20000);
     return () => window.clearInterval(intervalId);
-  }, [loadQueue]);
+  }, [scheduleQueueRefresh]);
 
-  useEffect(() => subscribeToTeamPushMessages(() => loadQueue()), [loadQueue]);
+  useEffect(() => subscribeToTeamPushMessages(() => scheduleQueueRefresh()), [scheduleQueueRefresh]);
 
   useEffect(
-    () => subscribeWaiterOperationalRefresh(() => loadQueue(), { scopes: ['queue'] }),
-    [loadQueue]
+    () => subscribeWaiterOperationalRefresh(() => scheduleQueueRefresh(), { scopes: ['queue'] }),
+    [scheduleQueueRefresh]
   );
 
   useEffect(() => {
@@ -187,7 +191,7 @@ export default function WaiterQueuePage() {
     const delayMs = Math.max(800, nextExpiryAt - Date.now() + 800);
     expiryRefreshTimeoutRef.current = window.setTimeout(() => {
       expiryRefreshTimeoutRef.current = 0;
-      loadQueue();
+      scheduleQueueRefresh();
     }, delayMs);
 
     return () => {
@@ -196,7 +200,7 @@ export default function WaiterQueuePage() {
         expiryRefreshTimeoutRef.current = 0;
       }
     };
-  }, [loadQueue, queue]);
+  }, [queue, scheduleQueueRefresh]);
 
   const sortedQueue = useMemo(
     () =>

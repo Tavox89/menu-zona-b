@@ -12,6 +12,7 @@ import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useWaiterSession } from '../../context/WaiterSessionContext.jsx';
 import { useWaiterRealtime } from '../../context/useWaiterRealtime.js';
+import useSerializedRefresh from '../../hooks/useSerializedRefresh.js';
 import { useTeamPushNotifications } from '../../hooks/useTeamPushNotifications.js';
 import { fetchSettings } from '../../services/tavox.js';
 import {
@@ -307,6 +308,10 @@ export default function WaiterShell({
     },
     [session?.session_token]
   );
+  const scheduleNotificationsRefresh = useSerializedRefresh(
+    () => loadNotifications({ quiet: true }),
+    { minGapMs: 500 }
+  );
 
   const handleMarkNotificationsRead = useCallback(
     async (ids = []) => {
@@ -509,16 +514,24 @@ export default function WaiterShell({
         });
       }
 
-      loadNotifications({ quiet: true });
+      scheduleNotificationsRefresh();
     },
-    [currentPushScope, loadNotifications, soundEnabled, wasPushFeedbackHandledRecently]
+    [
+      currentPushScope,
+      scheduleNotificationsRefresh,
+      soundEnabled,
+      wasPushFeedbackHandledRecently,
+    ]
   );
 
   useEffect(() => subscribeToTeamPushMessages(handlePushMessage), [handlePushMessage]);
 
   useEffect(
-    () => subscribeWaiterOperationalRefresh(() => loadNotifications({ quiet: true }), { scopes: ['notifications'] }),
-    [loadNotifications]
+    () =>
+      subscribeWaiterOperationalRefresh(() => scheduleNotificationsRefresh(), {
+        scopes: ['notifications'],
+      }),
+    [scheduleNotificationsRefresh]
   );
 
   useEffect(() => {
@@ -533,18 +546,23 @@ export default function WaiterShell({
     return subscribeRealtime({
       channels: notificationChannels,
       onEvent: () => {
-        loadNotifications({ quiet: true });
+        scheduleNotificationsRefresh();
       },
     });
-  }, [loadNotifications, notificationChannels, session?.session_token, subscribeRealtime]);
+  }, [
+    notificationChannels,
+    scheduleNotificationsRefresh,
+    session?.session_token,
+    subscribeRealtime,
+  ]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
-      loadNotifications({ quiet: true });
+      scheduleNotificationsRefresh();
     }, 20000);
 
     return () => window.clearInterval(intervalId);
-  }, [loadNotifications]);
+  }, [scheduleNotificationsRefresh]);
 
   useEffect(() => {
     const previousCount = previousActiveNotificationsCountRef.current;
