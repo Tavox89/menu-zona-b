@@ -72,8 +72,16 @@ TIMESTAMP='${TIMESTAMP}'
 mkdir -p "\${REMOTE_BACKUP_DIR}"
 tar --exclude='./.zonab-ops' -czf "\${REMOTE_BACKUP_DIR}/predeploy-preview-root.tgz" -C "\${REMOTE_DOCROOT}" .
 
-rm -rf "\${REMOTE_DOCROOT}/assets" "\${REMOTE_DOCROOT}/pwa"
-rm -f \\
+sudo -n /usr/local/sbin/zonab-pathops setfacl -m "u:zonabagent:rwx" "\${REMOTE_DOCROOT}"
+
+for tree in "\${REMOTE_DOCROOT}/assets" "\${REMOTE_DOCROOT}/pwa"; do
+  if [[ -e "\${tree}" ]]; then
+    sudo -n /usr/local/sbin/zonab-pathops setfacl -R -m "u:zonabagent:rwx" "\${tree}"
+    rm -rf "\${tree}"
+  fi
+done
+
+for file in \\
   "\${REMOTE_DOCROOT}/index.html" \\
   "\${REMOTE_DOCROOT}/manifest.json" \\
   "\${REMOTE_DOCROOT}/manifest.webmanifest" \\
@@ -85,7 +93,12 @@ rm -f \\
   "\${REMOTE_DOCROOT}/vite.svg" \\
   "\${REMOTE_DOCROOT}/logoformalzonab.png" \\
   "\${REMOTE_DOCROOT}/logoisola.png" \\
-  "\${REMOTE_DOCROOT}/noImagen.png"
+  "\${REMOTE_DOCROOT}/noImagen.png"; do
+  if [[ -f "\${file}" ]]; then
+    sudo -n /usr/local/sbin/zonab-pathops setfacl -m "u:zonabagent:rw" "\${file}"
+    rm -f "\${file}"
+  fi
+done
 
 tar --no-same-owner --no-same-permissions --no-overwrite-dir -xzf "\${REMOTE_UPLOAD_TGZ}" -C "\${REMOTE_DOCROOT}"
 rm -f "\${REMOTE_UPLOAD_TGZ}"

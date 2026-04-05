@@ -15,6 +15,7 @@ import {
   isAllowedAppEntry,
   rememberTeamLaunchPath,
 } from '../utils/appLaunchPreference.js';
+import { resolveWaiterTarget } from '../utils/waiterAccess.js';
 import { OP_CONTROL_RADIUS, OP_PANEL_RADIUS } from '../theme/operationalRadii.js';
 
 function resolveTeamLoginTarget(location) {
@@ -64,19 +65,20 @@ function getTeamLoginCopy(targetPath) {
 export default function WaiterLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, submitting, error, clearError, isAuthenticated } = useWaiterSession();
+  const { login, submitting, error, clearError, isAuthenticated, session } = useWaiterSession();
   const [form, setForm] = useState({
     pin: '',
   });
-  const targetPath = resolveTeamLoginTarget(location);
-  const loginCopy = getTeamLoginCopy(targetPath);
+  const requestedTargetPath = resolveTeamLoginTarget(location);
+  const nextAllowedTargetPath = resolveWaiterTarget(session, requestedTargetPath);
+  const loginCopy = getTeamLoginCopy(requestedTargetPath);
 
   useEffect(() => {
-    rememberTeamLaunchPath(targetPath);
-  }, [targetPath]);
+    rememberTeamLaunchPath(nextAllowedTargetPath);
+  }, [nextAllowedTargetPath]);
 
   if (isAuthenticated) {
-    return <Navigate to={targetPath} replace />;
+    return <Navigate to={nextAllowedTargetPath} replace />;
   }
 
   const handleChange = (field) => (event) => {
@@ -88,14 +90,14 @@ export default function WaiterLoginPage() {
     event.preventDefault();
 
     try {
-      await login({
+      const nextSession = await login({
         pin: form.pin,
         deviceLabel:
           typeof navigator !== 'undefined' && navigator.userAgent
             ? navigator.userAgent.slice(0, 80)
             : 'Panel del equipo',
       });
-      navigate(targetPath, { replace: true });
+      navigate(resolveWaiterTarget(nextSession, requestedTargetPath), { replace: true });
     } catch {
       // handled by context error state
     }

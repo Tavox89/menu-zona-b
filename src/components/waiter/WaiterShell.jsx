@@ -30,6 +30,7 @@ import {
   emitWaiterOperationalRefresh,
   subscribeWaiterOperationalRefresh,
 } from '../../utils/waiterOperationalRefresh.js';
+import { getWaiterAllowedNavigation } from '../../utils/waiterAccess.js';
 import TabletSetupCard from './TabletSetupCard.jsx';
 import NotificationCenterDialog from './NotificationCenterDialog.jsx';
 import { OP_PANEL_RADIUS } from '../../theme/operationalRadii.js';
@@ -52,6 +53,21 @@ function NavButton({ to, label, search = '' }) {
       {label}
     </Button>
   );
+}
+
+function getNavigationSearch(pathname = '', currentSearch = '') {
+  const params = new URLSearchParams(String(currentSearch || '').trim());
+  const tableToken = String(params.get('table_token') || '').trim();
+
+  if (!tableToken) {
+    return '';
+  }
+
+  if (pathname === '/equipo/servicio' || pathname === '/equipo/menu') {
+    return `?table_token=${encodeURIComponent(tableToken)}`;
+  }
+
+  return '';
 }
 
 function showBrowserWindowNotification({ title, body, tag }) {
@@ -202,19 +218,19 @@ export default function WaiterShell({
     waiterName: getSessionWaiterDisplayName(session?.waiter),
     scope: currentPushScope,
   });
+  const allowedNavigation = useMemo(
+    () => getWaiterAllowedNavigation(session),
+    [session]
+  );
   const waiterDisplayName = getSessionWaiterDisplayName(session?.waiter);
   const notificationChannels = useMemo(() => {
     const userChannel = getWaiterRealtimeUserChannel(session?.waiter?.id);
+    const scopeChannels = allowedNavigation
+      .map(({ scope }) => (scope === 'menu' ? 'scope:service' : `scope:${scope}`))
+      .filter(Boolean);
 
-    return [
-      'scope:queue',
-      'scope:service',
-      'scope:kitchen',
-      'scope:horno',
-      'scope:bar',
-      userChannel,
-    ].filter(Boolean);
-  }, [session?.waiter?.id]);
+    return Array.from(new Set([...scopeChannels, userChannel].filter(Boolean)));
+  }, [allowedNavigation, session?.waiter?.id]);
 
   const showPushSetup =
     checked &&
@@ -637,13 +653,14 @@ export default function WaiterShell({
               </Alert>
             ) : null}
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 1.5 }}>
-              {!isStationMode ? (
-                <>
-                  <NavButton to="/equipo/pedidos" label="Pedidos" />
-                  <NavButton to="/equipo/servicio" label="Servicio" />
-                  <NavButton to="/equipo/menu" label="Menú" />
-                </>
-              ) : null}
+              {allowedNavigation.map((item) => (
+                <NavButton
+                  key={item.path}
+                  to={item.path}
+                  label={item.label}
+                  search={getNavigationSearch(item.path, location.search)}
+                />
+              ))}
               <Button
                 size="small"
                 variant={notificationsOpen || notificationsUnreadCount > 0 ? 'contained' : 'outlined'}

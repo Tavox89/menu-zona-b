@@ -36,10 +36,19 @@ function mergeSessionSnapshot(currentSession, nextSnapshot) {
         ...nextSnapshot.realtime,
       }
     : currentSession.realtime;
+  const nextAccess = nextSnapshot?.access && typeof nextSnapshot.access === 'object'
+    ? {
+        ...(currentSession.access && typeof currentSession.access === 'object'
+          ? currentSession.access
+          : {}),
+        ...nextSnapshot.access,
+      }
+    : currentSession.access;
   const nextSession = {
     ...currentSession,
     waiter: nextWaiter,
     realtime: nextRealtime,
+    access: nextAccess,
     shared_tables_enabled:
       typeof nextSnapshot?.shared_tables_enabled === 'boolean'
         ? nextSnapshot.shared_tables_enabled

@@ -48,6 +48,7 @@ import {
 } from '../utils/waiterOperationalRefresh.js';
 import { subscribeToTeamPushMessages } from '../utils/teamPush.js';
 import { formatPrice } from '../utils/price.js';
+import { isWaiterPathAllowed } from '../utils/waiterAccess.js';
 import {
   formatPrepElapsed,
   getFulfillmentModeChipColor,
@@ -549,6 +550,7 @@ export default function WaiterTablesPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { session } = useWaiterSession();
+  const canOpenMenuScreen = isWaiterPathAllowed(session, '/equipo/menu');
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -1227,7 +1229,7 @@ export default function WaiterTablesPage() {
                           <Button
                             variant="contained"
                             startIcon={<TableRestaurantOutlinedIcon />}
-                            disabled={!table.can_direct_order}
+                            disabled={!table.can_direct_order || !canOpenMenuScreen}
                             onClick={(event) => {
                               event.stopPropagation();
                               navigate({
@@ -1236,7 +1238,9 @@ export default function WaiterTablesPage() {
                               });
                             }}
                           >
-                            {openMenuLabel}
+                            {!canOpenMenuScreen
+                              ? 'Sin acceso al menú'
+                              : openMenuLabel}
                           </Button>
                         </Stack>
                       </Stack>
@@ -1682,7 +1686,7 @@ export default function WaiterTablesPage() {
                   <Button
                     variant="contained"
                     startIcon={<TableRestaurantOutlinedIcon />}
-                    disabled={!selectedTable.can_direct_order}
+                    disabled={!selectedTable.can_direct_order || !canOpenMenuScreen}
                     onClick={() => {
                       navigate({
                         pathname: '/equipo/menu',
@@ -1691,7 +1695,11 @@ export default function WaiterTablesPage() {
                       setSelectedTable(null);
                     }}
                   >
-                    {selectedTable.can_direct_order ? 'Ir al menú' : 'No disponible'}
+                    {!canOpenMenuScreen
+                      ? 'Sin acceso al menú'
+                      : selectedTable.can_direct_order
+                        ? 'Ir al menú'
+                        : 'No disponible'}
                   </Button>
                 </Stack>
               </Stack>

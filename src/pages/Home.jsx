@@ -43,6 +43,7 @@ import {
   normalizeSearchText,
   sortProductsByQuery,
 } from '../utils/search.js';
+import { getWaiterDefaultPath, isWaiterPathAllowed } from '../utils/waiterAccess.js';
 import { getServiceStageLabel } from '../utils/teamStatus.js';
 import { submitTableRequest, submitWaiterDirectOrder } from '../services/tableService.js';
 import { useNavigate } from 'react-router-dom';
@@ -283,6 +284,9 @@ export default function Home({
   const otherBrandLogo = getBrandConfig(otherBrand).switchLogo || getBrandConfig(otherBrand).logo;
   const currentTableToken = String(tableContext?.table_token || tableContext?.tableToken || '').trim();
   const currentTableName = String(tableContext?.table?.name || tableContext?.table_name || '').trim();
+  const waiterFallbackPath = isWaiterMode ? getWaiterDefaultPath(waiterSession) : '';
+  const waiterCanOpenService = isWaiterMode && isWaiterPathAllowed(waiterSession, '/equipo/servicio');
+  const waiterCanOpenQueue = isWaiterMode && isWaiterPathAllowed(waiterSession, '/equipo/pedidos');
   const waiterDisplayName = normalizeDisplayHandle(
     tableContext?.owner_display_name ||
       waiterSession?.waiter?.display_name ||
@@ -1021,22 +1025,35 @@ export default function Home({
                       justifyContent: { xs: 'flex-start', md: 'flex-end' },
                     }}
                   >
-                    <Button
-                      variant="outlined"
-                      startIcon={<ArrowBackRoundedIcon />}
-                      onClick={() => navigate('/equipo/servicio')}
-                      sx={{ borderRadius: 999, minHeight: 42, px: 1.8 }}
-                    >
-                      Volver al staff
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={<ReceiptLongRoundedIcon />}
-                      onClick={() => navigate('/equipo/pedidos')}
-                      sx={{ borderRadius: 999, minHeight: 42, px: 1.8 }}
-                    >
-                      Ver pedidos
-                    </Button>
+                    {waiterCanOpenService ? (
+                      <Button
+                        variant="outlined"
+                        startIcon={<ArrowBackRoundedIcon />}
+                        onClick={() => navigate('/equipo/servicio')}
+                        sx={{ borderRadius: 999, minHeight: 42, px: 1.8 }}
+                      >
+                        Volver al staff
+                      </Button>
+                    ) : waiterFallbackPath && waiterFallbackPath !== '/equipo/menu' ? (
+                      <Button
+                        variant="outlined"
+                        startIcon={<ArrowBackRoundedIcon />}
+                        onClick={() => navigate(waiterFallbackPath)}
+                        sx={{ borderRadius: 999, minHeight: 42, px: 1.8 }}
+                      >
+                        Volver al panel
+                      </Button>
+                    ) : null}
+                    {waiterCanOpenQueue ? (
+                      <Button
+                        variant="outlined"
+                        startIcon={<ReceiptLongRoundedIcon />}
+                        onClick={() => navigate('/equipo/pedidos')}
+                        sx={{ borderRadius: 999, minHeight: 42, px: 1.8 }}
+                      >
+                        Ver pedidos
+                      </Button>
+                    ) : null}
                     <Button
                       variant="contained"
                       startIcon={<RefreshRoundedIcon />}

@@ -9,13 +9,23 @@ import WaiterMenuPage from '../pages/WaiterMenuPage.jsx';
 import TeamProductionPage from '../pages/TeamProductionPage.jsx';
 import { useWaiterSession } from '../context/WaiterSessionContext.jsx';
 import { getPreferredStandaloneEntry, getRequestedAppEntry } from '../utils/appLaunchPreference.js';
+import { getWaiterDefaultPath, isWaiterPathAllowed } from '../utils/waiterAccess.js';
 
 function WaiterProtectedRoutes() {
-  const { isAuthenticated } = useWaiterSession();
+  const { isAuthenticated, session } = useWaiterSession();
   const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/equipo" replace state={{ from: location }} />;
+  }
+
+  if (!isWaiterPathAllowed(session, location.pathname)) {
+    return (
+      <Navigate
+        to={{ pathname: getWaiterDefaultPath(session), search: location.search }}
+        replace
+      />
+    );
   }
 
   return <Outlet />;

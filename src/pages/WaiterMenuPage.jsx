@@ -8,6 +8,7 @@ import WaiterShell from '../components/waiter/WaiterShell.jsx';
 import { useWaiterSession } from '../context/WaiterSessionContext.jsx';
 import useTableContext from '../hooks/useTableContext.js';
 import useWaiterLiveStream from '../hooks/useWaiterLiveStream.js';
+import { getWaiterDefaultPath, isWaiterPathAllowed } from '../utils/waiterAccess.js';
 import Home from './Home.jsx';
 
 export default function WaiterMenuPage() {
@@ -34,15 +35,21 @@ export default function WaiterMenuPage() {
     enabled: Boolean(session?.session_token && tableToken),
     onSync: refresh,
   });
+  const hasServiceAccess = isWaiterPathAllowed(session, '/equipo/servicio');
+  const fallbackTeamPath = hasServiceAccess ? '/equipo/servicio' : getWaiterDefaultPath(session);
+  const canLeaveMenu = Boolean(fallbackTeamPath && fallbackTeamPath !== '/equipo/menu');
+  const fallbackLabel = hasServiceAccess ? 'Ver servicio' : 'Ir al panel disponible';
 
   if (!tableToken) {
     return (
       <WaiterShell title="Tomar pedido" subtitle="Selecciona una mesa para empezar.">
         <Stack spacing={2}>
           <Alert severity="info">Elige una mesa para abrir la carta y cargar el pedido.</Alert>
-          <Button variant="contained" onClick={() => navigate('/equipo/servicio')}>
-            Ver servicio
-          </Button>
+          {canLeaveMenu ? (
+            <Button variant="contained" onClick={() => navigate(fallbackTeamPath)}>
+              {fallbackLabel}
+            </Button>
+          ) : null}
         </Stack>
       </WaiterShell>
     );
@@ -59,9 +66,11 @@ export default function WaiterMenuPage() {
           <Alert severity="error">
             {error || 'Esta mesa ya no está disponible en este momento.'}
           </Alert>
-          <Button variant="contained" onClick={() => navigate('/equipo/servicio')}>
-            Volver al servicio
-          </Button>
+          {canLeaveMenu ? (
+            <Button variant="contained" onClick={() => navigate(fallbackTeamPath)}>
+              {hasServiceAccess ? 'Volver al servicio' : fallbackLabel}
+            </Button>
+          ) : null}
         </Stack>
       </WaiterShell>
     );
